@@ -1,5 +1,4 @@
-<code>
-git reset --hard tags/v1.0
+<code>git reset --hard tags/v1.0
 git reset --hard
 rm -rf .git/
 git init
