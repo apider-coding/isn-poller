@@ -1,0 +1,11 @@
+[flake8]
+statistics = True
+count = True
+show-source = True
+filename =
+    ./*.py
+    ./test/*.py
+ignore = E501, W605
+exclude =
+    .git,
+    __pycache__
