@@ -3,8 +3,11 @@
 [![GitGuardian scan](https://github.com/apider-coding/isn-poller/actions/workflows/ggscan.yaml/badge.svg)](https://github.com/apider-coding/isn-poller/actions/workflows/ggscan.yaml)
 [![CI Pipeline](https://github.com/apider-coding/isn-poller/actions/workflows/release.yaml/badge.svg)](https://github.com/apider-coding/isn-poller/actions/workflows/release.yaml)
 # isn_poller
-#### Gets
-Yesterday daily Sun Spot number (ISN)
+
+[Change Log](./CHANGELOG.md)
+
+# Does what
+Gets yesterday daily Sun Spot number (ISN)
 
 From: http://sunspotwatch.com
 
