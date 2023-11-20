@@ -4,4 +4,4 @@ urllib3==1.26.5
 APScheduler==3.6.3
 fastapi==0.70.0
 uvicorn==0.15.0
-tzlocal==2.1
+tzlocal==5.2
