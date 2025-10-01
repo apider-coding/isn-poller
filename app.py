@@ -178,7 +178,8 @@ logging.info(sched.print_jobs(out=sys.stdout))
 # app = FastAPI()
 
 # Url to get ISN data from
-isn_url = 'http://sunspotwatch.com'
+# isn_url = 'http://sunspotwatch.com'
+isn_url = 'https://services.swpc.noaa.gov/json/f107_cm_flux.json'
 
 # Splunk test url and headers
 splunkurl = 'https://splunk.home:8088/services/collector/event?sourcetype=isn_daily'
@@ -200,7 +201,8 @@ def get_page(url):
     try:
         r = requests.get(url)
         r.raise_for_status()
-        page = r.text
+        # page = r.text
+        page = r.json()
         logging.info('Page %s loaded ok. %s', url, r)
         return page
     except requests.exceptions.HTTPError as err:
@@ -212,31 +214,38 @@ def get_page(url):
 def extract_data(page):
     try:
         logging.info('Extracting page data...')
-        match = re.search(
-            r"Sun.Spots\:\s\<b\>(\d+)\<\/b\>.as.of\s(\d+\/\d+\/\d+)", page)
-        isn = match.group(1)
-        date = match.group(2)
-        match = re.search(r"10\.7\-cm\sFlux\:\s\<b\>(\d+)", page)
-        flux_10cm = match.group(1)
+        # Assuming the page content is a valid JSON string
+        data = json.loads(page)
 
-        try:
-            match = re.search(
-                r"Planetary K-index\s\(\<b\>Kp\<\/b\>\)\:\s\<b\>(\d+)", page)
-            Kp = match.group(1)
-        except Exception as e:
-            logging.error('Could not extract KP, setting to 0, {}'.format(e))
-            Kp = str(0)
+        # Extract the latest flux value (assuming you want the most recent one)
+        if not data:
+            raise ValueError("No data found in the response.")
 
-        date_object = datetime.strptime(date, '%m/%d/%Y')
+        # Sort data by time_tag to get the most recent entry
+        data.sort(key=lambda x: x['time_tag'], reverse=True)
+        latest_entry = data[0]
+
+        flux_10cm = latest_entry.get('flux', None)
+        if flux_10cm is None:
+            raise ValueError("Flux value not found in the response.")
+
+        # Extract other necessary values (if needed)
+        time_tag = latest_entry['time_tag']
+        date_object = datetime.strptime(time_tag, '%Y-%m-%dT%H:%M:%S')
         epoch = time.mktime(date_object.timetuple())
         esdate_object = date_object.strftime('%Y-%m-%dT%H:%M:%S')
+
+        # Assuming isn and Kp are not available in the new format
+        isn = '0'
+        Kp = '0'
+
         logging.debug('Daily ISN Count: %s', isn)
         logging.debug('Daily 10.7cm Flux: %s', flux_10cm)
         logging.debug('Daily Kp Index: %s', Kp)
-    except AttributeError as e:
-        logging.error('Attribute Error: %s', e)
-    except UnboundLocalError as e:
-        logging.error('Unbound Local Error: %s', e)
+    except json.JSONDecodeError as e:
+        logging.error('JSON decode error: %s', e)
+    except ValueError as e:
+        logging.error('Value Error: %s', e)
     except Exception as e:
         logging.error('Extract data, other error: %s', e)
     else:
