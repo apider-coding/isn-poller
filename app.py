@@ -59,6 +59,17 @@ logging.basicConfig(
 # Disable https warning
 urllib3.disable_warnings()
 
+# Extract version from package.json and print to console
+try:
+    with open('package.json', 'r') as f:
+        package_data = json.load(f)
+        version = package_data.get('version', 'Unknown')
+        print(f"Version: {version}")
+except FileNotFoundError:
+    logging.info("package.json not found.")
+except json.JSONDecodeError:
+    logging.info("Failed to decode package.json.")
+
 
 def dailyIsnIngest():
     logging.info('---  ingest scheduler start ---')
