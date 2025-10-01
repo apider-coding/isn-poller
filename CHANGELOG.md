@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.0.7](https://github.com/apider-coding/isn-poller/compare/v1.0.6...v1.0.7) (2025-10-01)
+
+
+### Bug Fixes
+
+* Using the 10.7cm Flux as a Proxy for Sunspot Number ([16e3c5a](https://github.com/apider-coding/isn-poller/commit/16e3c5a17d84ef22e1a19507827f8868d14f9255))
+
 ### [1.0.6](https://github.com/apider-coding/isn-poller/compare/v1.0.5...v1.0.6) (2025-10-01)
 
 
