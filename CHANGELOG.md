@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.0.6](https://github.com/apider-coding/isn-poller/compare/v1.0.5...v1.0.6) (2025-10-01)
+
+
+### Bug Fixes
+
+* Convert metric values to strings in Blynk URL construction ([a61c8cc](https://github.com/apider-coding/isn-poller/commit/a61c8cc14f515e438566f09ddf465e859ea19aa4))
+
 ### [1.0.5](https://github.com/apider-coding/isn-poller/compare/v1.0.4...v1.0.5) (2025-10-01)
 
 
