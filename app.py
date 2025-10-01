@@ -228,7 +228,12 @@ def extract_data(data):
         flux_10cm = latest_entry.get('flux', None)
         if flux_10cm is None:
             raise ValueError("Flux value not found in the response.")
-
+        # Convert flux_10cm to an integer
+        try:
+            flux_10cm = int(flux_10cm)
+        except ValueError as e:
+            logging.error('Failed to convert flux_10cm to integer: %s', e)
+            raise
         # Extract other necessary values (if needed)
         time_tag = latest_entry['time_tag']
         date_object = datetime.strptime(time_tag, '%Y-%m-%dT%H:%M:%S')
