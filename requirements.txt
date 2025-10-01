@@ -1,6 +1,6 @@
 pytz==2020.4
 requests==2.31.0
-urllib3==1.26.5
+urllib3==2.5.0
 APScheduler==3.6.3
 uvicorn==0.27.1
 fastapi==0.109.2
