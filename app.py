@@ -196,6 +196,7 @@ def extract_data(data):
 
         # Assuming isn and Kp are not available in the new format
         # Calculate isn based on the formula
+        logging.info('Calculating ISN from 10.7cm flux... (isn=int((1.14)*flux_10cm-73.21))')
         isn = int((1.14) * flux_10cm - 73.21)
         Kp = '0'
 
