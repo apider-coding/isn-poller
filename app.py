@@ -241,7 +241,8 @@ def extract_data(data):
         esdate_object = date_object.strftime('%Y-%m-%dT%H:%M:%S')
 
         # Assuming isn and Kp are not available in the new format
-        isn = '0'
+        # Calculate isn based on the formula
+        isn = int((1.14) * flux_10cm - 73.21)
         Kp = '0'
 
         logging.debug('Daily ISN Count: %s', isn)
