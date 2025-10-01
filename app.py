@@ -200,6 +200,7 @@ def extract_data(data):
         isn = int((1.14) * flux_10cm - 73.21)
         Kp = '0'
 
+        logging.debug('Daate:: %s', time_tag)
         logging.debug('Daily ISN Count: %s', isn)
         logging.debug('Daily 10.7cm Flux: %s', flux_10cm)
         logging.debug('Daily Kp Index: %s', Kp)
