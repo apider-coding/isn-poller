@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.0.5](https://github.com/apider-coding/isn-poller/compare/v1.0.4...v1.0.5) (2025-10-01)
+
+
+### Bug Fixes
+
+* flux to integer ([fc82c4e](https://github.com/apider-coding/isn-poller/commit/fc82c4e7b4aba75f31c9323602810bd9e4f01843))
+* turn off dependabot ([a7069b8](https://github.com/apider-coding/isn-poller/commit/a7069b83c7925bf4a5562055e212a474aa97c37a))
+
 ### [1.0.4](https://github.com/apider-coding/isn-poller/compare/v1.0.3...v1.0.4) (2025-10-01)
 
 
