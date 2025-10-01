@@ -2,7 +2,7 @@ import json
 import requests
 import urllib3
 import sys
-import re
+# import re
 import os
 import time
 # import tzlocal
@@ -168,7 +168,7 @@ sched.add_job(func=dailyIsnIngest, trigger='interval', hours=6)
 # Schedule posting to discord every 12 hours
 sched.add_job(func=dailyIsnDiscord, trigger='interval', hours=24)
 # Schedule posting to Blynk
-sched.add_job(func=postBlynk, trigger='interval', minutes=29)
+sched.add_job(func=postBlynk, trigger='interval', minutes=1)
 # start all schedulers
 sched.start()
 # Log all sched jobs
@@ -215,7 +215,7 @@ def extract_data(page):
     try:
         logging.info('Extracting page data...')
         # Assuming the page content is a valid JSON string
-        data = json.loads(page)
+        # data = json.loads(page)
 
         # Extract the latest flux value (assuming you want the most recent one)
         if not data:
