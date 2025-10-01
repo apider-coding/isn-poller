@@ -145,7 +145,7 @@ def postBlynk():
 
     def pinurl(pin, metric):
         pinUrl = BLYNK_API_URL + '/' + BLYNK_TOKEN + \
-            '/update/' + pin + '?value=' + metric
+            '/update/' + pin + '?value=' + str(metric)  # Convert metric to string
         return pinUrl
 
     pinUrl = pinurl('V31', isn)
