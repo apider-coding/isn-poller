@@ -2,7 +2,7 @@ import json
 import requests
 import urllib3
 import sys
-import re
+# import re
 import os
 import time
 # import tzlocal
@@ -28,23 +28,6 @@ DISCORD_TOKEN = os.environ.get('DISCORD_TOKEN')
 app = FastAPI()
 security = HTTPBasic()
 
-# APM
-# from elasticapm.contrib.flask import ElasticAPM
-
-# app.config['ELASTIC_APM'] = {
-#   # Set required service name. Allowed characters:
-#   # a-z, A-Z, 0-9, -, _, and space
-#   'SERVICE_NAME': 'nova2046',
-
-#   # Use if APM Server requires a token
-#   'SECRET_TOKEN': '',
-
-#   # Set custom APM Server URL (default: http://localhost:8200)
-#   'SERVER_URL': 'http://apm.home:8200',
-# }
-# apm = ElasticAPM(app)
-# APM
-
 
 def getAuth(credentials: HTTPBasicCredentials = Depends(security)):
 
@@ -68,34 +51,6 @@ def getAuth(credentials: HTTPBasicCredentials = Depends(security)):
 # Blynk auth token
 BLYNK_API_URL = os.environ.get("BLYNK_API_URL")
 BLYNK_TOKEN = os.environ.get("BLYNK_TOKEN")
-
-# Init blynk
-# blynk = blynklib.Blynk(BLYNK_TOKEN, server="192.168.1.100", port=8081)
-
-# APP_CONNECT_PRINT_MSG = '[APP_CONNECT_EVENT]'
-# APP_DISCONNECT_PRINT_MSG = '[APP_DISCONNECT_EVENT]'
-
-# @blynk.handle_event('internal_acon')
-# def app_connect_handler(*args):
-#     print(APP_CONNECT_PRINT_MSG)
-
-
-# @blynk.handle_event('internal_adis')
-# def app_disconnect_handler(*args):
-#     print(APP_DISCONNECT_PRINT_MSG)
-
-# create blynk loop that will run as own thread
-# def blynkLoop():
-# 	global blynk
-# 	print("Blynk thread Started")
-# 	#blynk.set_user_task(my_user_task, 1000)
-# 	blynk.run()
-
-# Start blynk background thread
-# t = threading.Thread(target = blynkLoop, daemon = True)
-# t = threading.Thread(target = blynkLoop)
-# t.start()
-# Blynk threaded setup
 
 # Set up logging
 logging.basicConfig(
@@ -145,7 +100,7 @@ def postBlynk():
 
     def pinurl(pin, metric):
         pinUrl = BLYNK_API_URL + '/' + BLYNK_TOKEN + \
-            '/update/' + pin + '?value=' + metric
+            '/update/' + pin + '?value=' + str(metric)  # Convert metric to string
         return pinUrl
 
     pinUrl = pinurl('V31', isn)
@@ -161,24 +116,13 @@ def postBlynk():
                  isn, flux_10cm, Kp)
     logging.info('---  Blynk scheduler end  ---')
 
-
-sched = BackgroundScheduler(daemon=True)
-# Schedule the ingestion every 6 hours
-sched.add_job(func=dailyIsnIngest, trigger='interval', hours=6)
-# Schedule posting to discord every 12 hours
-sched.add_job(func=dailyIsnDiscord, trigger='interval', hours=24)
-# Schedule posting to Blynk
-sched.add_job(func=postBlynk, trigger='interval', minutes=29)
-# start all schedulers
-sched.start()
-# Log all sched jobs
-logging.info(sched.print_jobs(out=sys.stdout))
-
 # app = Flask(__name__)
 # app = FastAPI()
 
+
 # Url to get ISN data from
-isn_url = 'http://sunspotwatch.com'
+# isn_url = 'http://sunspotwatch.com'
+isn_url = 'https://services.swpc.noaa.gov/json/f107_cm_flux.json'
 
 # Splunk test url and headers
 splunkurl = 'https://splunk.home:8088/services/collector/event?sourcetype=isn_daily'
@@ -200,7 +144,8 @@ def get_page(url):
     try:
         r = requests.get(url)
         r.raise_for_status()
-        page = r.text
+        # page = r.text
+        page = r.json()
         logging.info('Page %s loaded ok. %s', url, r)
         return page
     except requests.exceptions.HTTPError as err:
@@ -209,34 +154,47 @@ def get_page(url):
         logging.error('Page load, some other error: %s', e)
 
 
-def extract_data(page):
+def extract_data(data):
     try:
         logging.info('Extracting page data...')
-        match = re.search(
-            r"Sun.Spots\:\s\<b\>(\d+)\<\/b\>.as.of\s(\d+\/\d+\/\d+)", page)
-        isn = match.group(1)
-        date = match.group(2)
-        match = re.search(r"10\.7\-cm\sFlux\:\s\<b\>(\d+)", page)
-        flux_10cm = match.group(1)
+        # Assuming the page content is a valid JSON string
+        # data = json.loads(page)
 
+        # Extract the latest flux value (assuming you want the most recent one)
+        if not data:
+            raise ValueError("No data found in the response.")
+
+        # Sort data by time_tag to get the most recent entry
+        data.sort(key=lambda x: x['time_tag'], reverse=True)
+        latest_entry = data[0]
+
+        flux_10cm = latest_entry.get('flux', None)
+        if flux_10cm is None:
+            raise ValueError("Flux value not found in the response.")
+        # Convert flux_10cm to an integer
         try:
-            match = re.search(
-                r"Planetary K-index\s\(\<b\>Kp\<\/b\>\)\:\s\<b\>(\d+)", page)
-            Kp = match.group(1)
-        except Exception as e:
-            logging.error('Could not extract KP, setting to 0, {}'.format(e))
-            Kp = str(0)
-
-        date_object = datetime.strptime(date, '%m/%d/%Y')
+            flux_10cm = int(flux_10cm)
+        except ValueError as e:
+            logging.error('Failed to convert flux_10cm to integer: %s', e)
+            raise
+        # Extract other necessary values (if needed)
+        time_tag = latest_entry['time_tag']
+        date_object = datetime.strptime(time_tag, '%Y-%m-%dT%H:%M:%S')
         epoch = time.mktime(date_object.timetuple())
         esdate_object = date_object.strftime('%Y-%m-%dT%H:%M:%S')
+
+        # Assuming isn and Kp are not available in the new format
+        # Calculate isn based on the formula
+        isn = int((1.14) * flux_10cm - 73.21)
+        Kp = '0'
+
         logging.debug('Daily ISN Count: %s', isn)
         logging.debug('Daily 10.7cm Flux: %s', flux_10cm)
         logging.debug('Daily Kp Index: %s', Kp)
-    except AttributeError as e:
-        logging.error('Attribute Error: %s', e)
-    except UnboundLocalError as e:
-        logging.error('Unbound Local Error: %s', e)
+    except json.JSONDecodeError as e:
+        logging.error('JSON decode error: %s', e)
+    except ValueError as e:
+        logging.error('Value Error: %s', e)
     except Exception as e:
         logging.error('Extract data, other error: %s', e)
     else:
@@ -348,3 +306,15 @@ async def health(request: Request):
     logging.info('Health enpoint response to client %s', client)
     hostname = socket.gethostname()
     return dict(status="healthy", hostname=hostname)
+
+sched = BackgroundScheduler(daemon=True)
+# Schedule the ingestion every 6 hours
+sched.add_job(func=dailyIsnIngest, trigger='interval', hours=6)
+# Schedule posting to discord every 12 hours
+sched.add_job(func=dailyIsnDiscord, trigger='interval', hours=24)
+# Schedule posting to Blynk
+sched.add_job(func=postBlynk, trigger='interval', minutes=60)
+# start all schedulers
+sched.start()
+# Log all sched jobs
+logging.info(sched.print_jobs(out=sys.stdout))
