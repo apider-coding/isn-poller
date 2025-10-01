@@ -211,7 +211,7 @@ def get_page(url):
         logging.error('Page load, some other error: %s', e)
 
 
-def extract_data(page):
+def extract_data(data):
     try:
         logging.info('Extracting page data...')
         # Assuming the page content is a valid JSON string
