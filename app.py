@@ -76,9 +76,9 @@ def dailyIsnIngest():
     page = get_page(isn_url)
     isn, flux_10cm, Kp, epoch, date = extract_data(page)
 
-    logging.info('---  Sending to Splunk ---')
-    resp = hec_send(isn, flux_10cm, Kp, epoch)
-    logging.info('Splunk response: %s', resp)
+    # logging.info('---  Sending to Splunk ---')
+    # resp = hec_send(isn, flux_10cm, Kp, epoch)
+    # logging.info('Splunk response: %s', resp)
 
     logging.info('---  Sending to Elastic ---')
     resp = es_send(isn, flux_10cm, Kp, date)
