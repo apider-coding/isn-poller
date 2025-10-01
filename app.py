@@ -320,7 +320,7 @@ async def health(request: Request):
 
 sched = BackgroundScheduler(daemon=True)
 # Schedule the ingestion every 6 hours
-sched.add_job(func=dailyIsnIngest, trigger='interval', minutes=1)
+sched.add_job(func=dailyIsnIngest, trigger='interval', hours=3)
 # Schedule posting to discord every 12 hours
 sched.add_job(func=dailyIsnDiscord, trigger='interval', hours=24)
 # Schedule posting to Blynk
