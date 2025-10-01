@@ -28,23 +28,6 @@ DISCORD_TOKEN = os.environ.get('DISCORD_TOKEN')
 app = FastAPI()
 security = HTTPBasic()
 
-# APM
-# from elasticapm.contrib.flask import ElasticAPM
-
-# app.config['ELASTIC_APM'] = {
-#   # Set required service name. Allowed characters:
-#   # a-z, A-Z, 0-9, -, _, and space
-#   'SERVICE_NAME': 'nova2046',
-
-#   # Use if APM Server requires a token
-#   'SECRET_TOKEN': '',
-
-#   # Set custom APM Server URL (default: http://localhost:8200)
-#   'SERVER_URL': 'http://apm.home:8200',
-# }
-# apm = ElasticAPM(app)
-# APM
-
 
 def getAuth(credentials: HTTPBasicCredentials = Depends(security)):
 
@@ -68,34 +51,6 @@ def getAuth(credentials: HTTPBasicCredentials = Depends(security)):
 # Blynk auth token
 BLYNK_API_URL = os.environ.get("BLYNK_API_URL")
 BLYNK_TOKEN = os.environ.get("BLYNK_TOKEN")
-
-# Init blynk
-# blynk = blynklib.Blynk(BLYNK_TOKEN, server="192.168.1.100", port=8081)
-
-# APP_CONNECT_PRINT_MSG = '[APP_CONNECT_EVENT]'
-# APP_DISCONNECT_PRINT_MSG = '[APP_DISCONNECT_EVENT]'
-
-# @blynk.handle_event('internal_acon')
-# def app_connect_handler(*args):
-#     print(APP_CONNECT_PRINT_MSG)
-
-
-# @blynk.handle_event('internal_adis')
-# def app_disconnect_handler(*args):
-#     print(APP_DISCONNECT_PRINT_MSG)
-
-# create blynk loop that will run as own thread
-# def blynkLoop():
-# 	global blynk
-# 	print("Blynk thread Started")
-# 	#blynk.set_user_task(my_user_task, 1000)
-# 	blynk.run()
-
-# Start blynk background thread
-# t = threading.Thread(target = blynkLoop, daemon = True)
-# t = threading.Thread(target = blynkLoop)
-# t.start()
-# Blynk threaded setup
 
 # Set up logging
 logging.basicConfig(
@@ -161,21 +116,9 @@ def postBlynk():
                  isn, flux_10cm, Kp)
     logging.info('---  Blynk scheduler end  ---')
 
-
-sched = BackgroundScheduler(daemon=True)
-# Schedule the ingestion every 6 hours
-sched.add_job(func=dailyIsnIngest, trigger='interval', hours=6)
-# Schedule posting to discord every 12 hours
-sched.add_job(func=dailyIsnDiscord, trigger='interval', hours=24)
-# Schedule posting to Blynk
-sched.add_job(func=postBlynk, trigger='interval', minutes=1)
-# start all schedulers
-sched.start()
-# Log all sched jobs
-logging.info(sched.print_jobs(out=sys.stdout))
-
 # app = Flask(__name__)
 # app = FastAPI()
+
 
 # Url to get ISN data from
 # isn_url = 'http://sunspotwatch.com'
@@ -363,3 +306,15 @@ async def health(request: Request):
     logging.info('Health enpoint response to client %s', client)
     hostname = socket.gethostname()
     return dict(status="healthy", hostname=hostname)
+
+sched = BackgroundScheduler(daemon=True)
+# Schedule the ingestion every 6 hours
+sched.add_job(func=dailyIsnIngest, trigger='interval', hours=6)
+# Schedule posting to discord every 12 hours
+sched.add_job(func=dailyIsnDiscord, trigger='interval', hours=24)
+# Schedule posting to Blynk
+sched.add_job(func=postBlynk, trigger='interval', minutes=60)
+# start all schedulers
+sched.start()
+# Log all sched jobs
+logging.info(sched.print_jobs(out=sys.stdout))
