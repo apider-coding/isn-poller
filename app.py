@@ -68,9 +68,15 @@ def getAuth(credentials: HTTPBasicCredentials = Depends(security)):
 BLYNK_API_URL = os.environ.get("BLYNK_API_URL")
 BLYNK_TOKEN = os.environ.get("BLYNK_TOKEN")
 
-# Set up logging
+# # Set up logging
+# logging.basicConfig(
+#     format='%(asctime)s %(levelname)s: %(message)s', level=logging.INFO)
+
+# Updated format with trace context
 logging.basicConfig(
-    format='%(asctime)s %(levelname)s: %(message)s', level=logging.INFO)
+    format='%(asctime)s %(levelname)s [trace_id=%(otelTraceID)s span_id=%(otelSpanID)s service=%(otelServiceName)s] - %(message)s',
+    level=logging.INFO
+)
 
 # Disable https warning
 urllib3.disable_warnings()
