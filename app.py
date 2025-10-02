@@ -108,7 +108,7 @@ def dailyIsnDiscord():
     ISN_DATA = get_data(ISN_URL)
     KP_DATA = get_data(KP_URL)
     isn, flux_10cm, epoch, date = extract_isn(ISN_DATA)
-    kp = extract_kp(KP_DATA)
+    kp, epoch, date = extract_kp(KP_DATA)
 
     resp = discord_post(isn, flux_10cm, kp)
     logging.info('Discord: %s', resp)
@@ -120,7 +120,7 @@ def postBlynk():
     ISN_DATA = get_data(ISN_URL)
     KP_DATA = get_data(KP_URL)
     isn, flux_10cm, epoch, date = extract_isn(ISN_DATA)
-    kp = extract_kp(KP_DATA)
+    kp, epoch, date = extract_kp(KP_DATA)
 
     # blynk.virtual_write(31, isn)
     # blynk.virtual_write(32, flux_10cm)
@@ -179,9 +179,9 @@ def extract_kp(data):
             logging.error('Failed to convert kp to integer: %s', e)
             raise
         time_tag = latest_entry['time_tag']
-        # date_object = datetime.strptime(time_tag, '%Y-%m-%dT%H:%M:%S')
-        # epoch = time.mktime(date_object.timetuple())
-        # esdate_object = date_object.strftime('%Y-%m-%dT%H:%M:%S')
+        date_object = datetime.strptime(time_tag, '%Y-%m-%dT%H:%M:%S')
+        epoch = time.mktime(date_object.timetuple())
+        esdate_object = date_object.strftime('%Y-%m-%dT%H:%M:%S')
 
         logging.debug('Date: %s', time_tag)
         logging.debug('Kp Index: %s', kp)
@@ -192,8 +192,8 @@ def extract_kp(data):
     except Exception as e:
         logging.error('Extract data, other error: %s', e)
     else:
-        # return kp, epoch, esdate_object
-        return kp
+        return kp, epoch, esdate_object
+        # return kp
 
 
 def extract_isn(data):
@@ -334,7 +334,7 @@ async def home(request: Request):
     ISN_DATA = get_data(ISN_URL)
     KP_DATA = get_data(KP_URL)
     isn, flux_10cm, epoch, date = extract_isn(ISN_DATA)
-    kp = extract_kp(KP_DATA)
+    kp, epoch, date = extract_kp(KP_DATA)
     daily = dict(isn=isn, flux_10cm=flux_10cm, Kp=kp, date=date)
     response = dict(solar=daily)
     # responseCode = 200
