@@ -183,8 +183,7 @@ def extract_kp(data):
         epoch = time.mktime(date_object.timetuple())
         esdate_object = date_object.strftime('%Y-%m-%dT%H:%M:%S')
 
-        logging.debug('Date: %s', time_tag)
-        logging.debug('Kp Index: %s', kp)
+        logging.info('Kp Index: %s', kp)
     except json.JSONDecodeError as e:
         logging.error('JSON decode error: %s', e)
     except ValueError as e:
@@ -198,7 +197,7 @@ def extract_kp(data):
 
 def extract_isn(data):
     try:
-        logging.info('Extracting ISN data...')
+        logging.info('Extracting 10.7cm Flux data...')
         if not data:
             raise ValueError("No data found in the response.")
 
@@ -223,14 +222,10 @@ def extract_isn(data):
 
         # Assuming isn and Kp are not available in the new format
         # Calculate isn based on the formula
-        logging.info('Calculating ISN from 10.7cm flux... (isn=int((1.14)*flux_10cm-73.21))')
+        logging.info('Calculating ISN from 10.7cm flux proxy, (isn=int((1.14)*flux_10cm-73.21))')
         isn = int((1.14) * flux_10cm - 73.21)
-        # Kp = '0'
+        logging.info('10.7cm flux: %s, proxied ISN: %s', flux_10cm, isn)
 
-        logging.debug('Date:: %s', time_tag)
-        logging.debug('Daily ISN Count: %s', isn)
-        logging.debug('Daily 10.7cm Flux: %s', flux_10cm)
-        # logging.debug('Daily Kp Index: %s', Kp)
     except json.JSONDecodeError as e:
         logging.error('JSON decode error: %s', e)
     except ValueError as e:
