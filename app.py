@@ -6,6 +6,7 @@ import sys
 import os
 import time
 # import tzlocal
+import pytz
 import socket
 from datetime import datetime
 import logging
@@ -15,6 +16,8 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from fastapi import FastAPI, HTTPException, Depends, Request, status
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 
+# Set the timezone using pytz
+timezone = pytz.timezone('Europe/Stockholm')
 os.environ['TZ'] = 'Europe/Stockholm'
 if hasattr(time, 'tzset'):
     time.tzset()

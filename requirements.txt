@@ -1,7 +1,7 @@
 pytz==2025.2
 requests==2.32.4
 urllib3==2.5.0
-APScheduler==3.6.3
-uvicorn==0.27.1
+APScheduler==3.11.0
+uvicorn==0.37.0
 fastapi==0.109.2
-tzlocal==2.1
+tzlocal==5.3.1
