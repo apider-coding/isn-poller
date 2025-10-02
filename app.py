@@ -86,8 +86,8 @@ except json.JSONDecodeError:
 
 def dailyIsnIngest():
     logging.info('---  ingest scheduler start ---')
-    page = get_data(ISN_URL)
-    isn, flux_10cm, Kp, epoch, date = extract_isn(page)
+    data = get_data(ISN_URL)
+    isn, flux_10cm, Kp, epoch, date = extract_isn(data)
 
     # logging.info('---  Sending to Splunk ---')
     # resp = hec_send(isn, flux_10cm, Kp, epoch)
@@ -105,10 +105,12 @@ def dailyIsnIngest():
 
 def dailyIsnDiscord():
     logging.info('--- Discord scheduler start ---')
-    page = get_data(ISN_URL)
-    isn, flux_10cm, Kp, epoch, date = extract_isn(page)
+    ISN_DATA = get_data(ISN_URL)
+    KP_DATA = get_data(KP_URL)
+    isn, flux_10cm, epoch, date = extract_isn(ISN_DATA)
+    kp = extract_kp(KP_DATA)
 
-    resp = discord_post(isn, flux_10cm, Kp)
+    resp = discord_post(isn, flux_10cm, kp)
     logging.info('Discord: %s', resp)
     logging.info('---  Discord scheduler end  ---')
 
@@ -144,23 +146,22 @@ def postBlynk():
 
 
 def get_data(url):
-    logging.info('Trying to get metrics from page...')
+    logging.info('Getting data...')
     try:
         r = requests.get(url)
         r.raise_for_status()
-        # page = r.text
-        page = r.json()
-        logging.info('Page %s loaded ok. %s', url, r)
-        return page
+        data = r.json()
+        logging.info('Data from %s loaded ok. %s', url, r)
+        return data
     except requests.exceptions.HTTPError as err:
-        logging.error('Page %s load failed. %s Error: %s', url, r, err)
+        logging.error('Data %s load failed. %s Error: %s', url, r, err)
     except Exception as e:
-        logging.error('Page load, some other error: %s', e)
+        logging.error('Data load, some other error: %s', e)
 
 
 def extract_kp(data):
     try:
-        logging.info('Extracting page data...')
+        logging.info('Extracting Kp-index data...')
         if not data:
             raise ValueError("No data found in the response.")
 
@@ -197,7 +198,7 @@ def extract_kp(data):
 
 def extract_isn(data):
     try:
-        logging.info('Extracting page data...')
+        logging.info('Extracting ISN data...')
         if not data:
             raise ValueError("No data found in the response.")
 
@@ -226,7 +227,7 @@ def extract_isn(data):
         isn = int((1.14) * flux_10cm - 73.21)
         # Kp = '0'
 
-        logging.debug('Daate:: %s', time_tag)
+        logging.debug('Date:: %s', time_tag)
         logging.debug('Daily ISN Count: %s', isn)
         logging.debug('Daily 10.7cm Flux: %s', flux_10cm)
         # logging.debug('Daily Kp Index: %s', Kp)
@@ -260,7 +261,7 @@ def hec_send(isn, flux_10cm, Kp, date):
     except requests.exceptions.HTTPError as e:
         logging.error('--- Splunk post failed. Error: %s', e)
     except Exception as e:
-        logging.error('Page load, some other error: %s', e)
+        logging.error('Data load, some other error: %s', e)
     else:
         return r
 
@@ -289,7 +290,7 @@ def es_send(isn, flux_10cm, Kp, date):
     except requests.exceptions.HTTPError as e:
         logging.error('--- Elasticsearch post failed. Error: %s', e)
     except Exception as e:
-        logging.error('Page load, some other error: %s', e)
+        logging.error('Data load, some other error: %s', e)
     else:
         return r
 
@@ -309,7 +310,7 @@ def discord_post(isn, flux_10cm, Kp):
         logging.error(
             '--- Siscord post failed, %s load failed. %s Error: %s', url, r, err)
     except Exception as e:
-        logging.error('Page load, some other error: %s', e)
+        logging.error('Data load, some other error: %s', e)
     else:
         return r
 
@@ -328,7 +329,7 @@ async def test(request: Request, status_code=200, username: str = Depends(getAut
 @app.get("/api/v1/isn")
 @app.get("/v1/isn")
 async def home(request: Request):
-    logging.info('Solar data enpoint response to client: %s',
+    logging.info('Solar data response to client: %s',
                  request.client.host)
     ISN_DATA = get_data(ISN_URL)
     KP_DATA = get_data(KP_URL)
@@ -348,13 +349,14 @@ async def health(request: Request):
     hostname = socket.gethostname()
     return dict(status="healthy", hostname=hostname)
 
+# Set up the scheduler
 sched = BackgroundScheduler(daemon=True)
 # Schedule the ingestion every 6 hours
 sched.add_job(func=dailyIsnIngest, trigger='interval', hours=24)
 # Schedule posting to discord every 12 hours
 sched.add_job(func=dailyIsnDiscord, trigger='interval', hours=24)
 # Schedule posting to Blynk
-sched.add_job(func=postBlynk, trigger='interval', minutes=1)
+sched.add_job(func=postBlynk, trigger='interval', minutes=60)
 # start all schedulers
 sched.start()
 # Log all sched jobs
