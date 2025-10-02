@@ -7,18 +7,17 @@
 [Change Log](./CHANGELOG.md)
 
 # Does what
-Gets yesterday daily Sun Spot number (ISN)
+Gets daily Kp-index, 10.7cm solar flux & calculates proxy sun spot number (ISN)
 
-From: http://sunspotwatch.com
+## Data Sources
+Flux: `https://services.swpc.noaa.gov/json/f107_cm_flux.json`
 
-#### Posts to:
+Kp-index: `https://services.swpc.noaa.gov/json/planetary_k_index_1m.json`
 
-Splunk
+## Posts to:
 
 Elsticsearch
 
 Discord
 
 Blynk
-
-test
