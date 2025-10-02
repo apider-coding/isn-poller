@@ -24,6 +24,22 @@ apipass = os.environ.get('APIPASS')
 DISCORD_ID = os.environ.get('DISCORD_ID')
 DISCORD_TOKEN = os.environ.get('DISCORD_TOKEN')
 
+# Data sources
+ISN_URL = 'https://services.swpc.noaa.gov/json/f107_cm_flux.json'
+KP_URL = 'https://services.swpc.noaa.gov/json/planetary_k_index_1m.json'
+
+# Splunk test url and headers
+splunkurl = 'https://splunk.home:8088/services/collector/event?sourcetype=isn_daily'
+splunkheaders = {
+    'Authorization': 'Splunk 0dffc34c-268f-4b38-88a2-9f3e67498f2c'}
+
+# Splunk index
+index = 'isn'
+
+# Elasticearch params & headers
+esurl = 'http://elasticsearch.home:9200/solar/_doc/'
+esheaders = {'Content-Type': 'application/json'}
+
 
 app = FastAPI()
 security = HTTPBasic()
@@ -42,9 +58,6 @@ def getAuth(credentials: HTTPBasicCredentials = Depends(security)):
             headers={"WWW-Authenticate": "Basic"},
         )
     return credentials.username
-
-# import blynklib
-# import threading
 
 
 # Blynk threaded setup
@@ -73,8 +86,8 @@ except json.JSONDecodeError:
 
 def dailyIsnIngest():
     logging.info('---  ingest scheduler start ---')
-    page = get_page(isn_url)
-    isn, flux_10cm, Kp, epoch, date = extract_data(page)
+    page = get_data(ISN_URL)
+    isn, flux_10cm, Kp, epoch, date = extract_isn(page)
 
     # logging.info('---  Sending to Splunk ---')
     # resp = hec_send(isn, flux_10cm, Kp, epoch)
@@ -92,8 +105,8 @@ def dailyIsnIngest():
 
 def dailyIsnDiscord():
     logging.info('--- Discord scheduler start ---')
-    page = get_page(isn_url)
-    isn, flux_10cm, Kp, epoch, date = extract_data(page)
+    page = get_data(ISN_URL)
+    isn, flux_10cm, Kp, epoch, date = extract_isn(page)
 
     resp = discord_post(isn, flux_10cm, Kp)
     logging.info('Discord: %s', resp)
@@ -102,8 +115,10 @@ def dailyIsnDiscord():
 
 def postBlynk():
     logging.info('--- Blynk scheduler start ---')
-    page = get_page(isn_url)
-    isn, flux_10cm, Kp, epoch, date = extract_data(page)
+    ISN_DATA = get_data(ISN_URL)
+    KP_DATA = get_data(KP_URL)
+    isn, flux_10cm, epoch, date = extract_isn(ISN_DATA)
+    kp = extract_kp(KP_DATA)
 
     # blynk.virtual_write(31, isn)
     # blynk.virtual_write(32, flux_10cm)
@@ -120,37 +135,15 @@ def postBlynk():
     pinUrl = pinurl('V32', flux_10cm)
     requests.get(pinUrl, verify=False)
 
-    pinUrl = pinurl('V33', Kp)
+    pinUrl = pinurl('V33', kp)
     requests.get(pinUrl, verify=False)
 
     logging.info('Posted to Blynk: ISN, Flux, Kp; %s %s %s',
-                 isn, flux_10cm, Kp)
+                 isn, flux_10cm, kp)
     logging.info('---  Blynk scheduler end  ---')
 
-# app = Flask(__name__)
-# app = FastAPI()
 
-
-# Url to get ISN data from
-# isn_url = 'http://sunspotwatch.com'
-isn_url = 'https://services.swpc.noaa.gov/json/f107_cm_flux.json'
-
-# Splunk test url and headers
-splunkurl = 'https://splunk.home:8088/services/collector/event?sourcetype=isn_daily'
-splunkheaders = {
-    'Authorization': 'Splunk 0dffc34c-268f-4b38-88a2-9f3e67498f2c'}
-
-# Splunk index
-index = 'isn'
-
-# Elasticearch params & headers
-esurl = 'http://elasticsearch.home:9200/solar/_doc/'
-esheaders = {'Content-Type': 'application/json'}
-
-# Get webpage
-
-
-def get_page(url):
+def get_data(url):
     logging.info('Trying to get metrics from page...')
     try:
         r = requests.get(url)
@@ -165,13 +158,46 @@ def get_page(url):
         logging.error('Page load, some other error: %s', e)
 
 
-def extract_data(data):
+def extract_kp(data):
     try:
         logging.info('Extracting page data...')
-        # Assuming the page content is a valid JSON string
-        # data = json.loads(page)
+        if not data:
+            raise ValueError("No data found in the response.")
 
-        # Extract the latest flux value (assuming you want the most recent one)
+        # Sort data by time_tag to get the most recent entry
+        data.sort(key=lambda x: x['time_tag'], reverse=True)
+        latest_entry = data[0]
+
+        kp = latest_entry.get('kp_index', None)
+        if kp is None:
+            raise ValueError("Kp value not found in the response.")
+        # Convert kp to an integer
+        try:
+            kp = int(kp)
+        except ValueError as e:
+            logging.error('Failed to convert kp to integer: %s', e)
+            raise
+        time_tag = latest_entry['time_tag']
+        # date_object = datetime.strptime(time_tag, '%Y-%m-%dT%H:%M:%S')
+        # epoch = time.mktime(date_object.timetuple())
+        # esdate_object = date_object.strftime('%Y-%m-%dT%H:%M:%S')
+
+        logging.debug('Date: %s', time_tag)
+        logging.debug('Kp Index: %s', kp)
+    except json.JSONDecodeError as e:
+        logging.error('JSON decode error: %s', e)
+    except ValueError as e:
+        logging.error('Value Error: %s', e)
+    except Exception as e:
+        logging.error('Extract data, other error: %s', e)
+    else:
+        # return kp, epoch, esdate_object
+        return kp
+
+
+def extract_isn(data):
+    try:
+        logging.info('Extracting page data...')
         if not data:
             raise ValueError("No data found in the response.")
 
@@ -198,12 +224,12 @@ def extract_data(data):
         # Calculate isn based on the formula
         logging.info('Calculating ISN from 10.7cm flux... (isn=int((1.14)*flux_10cm-73.21))')
         isn = int((1.14) * flux_10cm - 73.21)
-        Kp = '0'
+        # Kp = '0'
 
         logging.debug('Daate:: %s', time_tag)
         logging.debug('Daily ISN Count: %s', isn)
         logging.debug('Daily 10.7cm Flux: %s', flux_10cm)
-        logging.debug('Daily Kp Index: %s', Kp)
+        # logging.debug('Daily Kp Index: %s', Kp)
     except json.JSONDecodeError as e:
         logging.error('JSON decode error: %s', e)
     except ValueError as e:
@@ -211,7 +237,7 @@ def extract_data(data):
     except Exception as e:
         logging.error('Extract data, other error: %s', e)
     else:
-        return isn, flux_10cm, Kp, epoch, esdate_object
+        return isn, flux_10cm, epoch, esdate_object
 
 # Build and post payload to Splunk HEC
 
@@ -304,8 +330,8 @@ async def test(request: Request, status_code=200, username: str = Depends(getAut
 async def home(request: Request):
     logging.info('Solar data enpoint response to client: %s',
                  request.client.host)
-    page = get_page(isn_url)
-    isn, flux_10cm, Kp, epoch, date = extract_data(page)
+    page = get_data(ISN_URL)
+    isn, flux_10cm, Kp, epoch, date = extract_isn(page)
     daily = dict(isn=isn, flux_10cm=flux_10cm, Kp=Kp, date=date)
     response = dict(solar=daily)
     # responseCode = 200
@@ -326,7 +352,7 @@ sched.add_job(func=dailyIsnIngest, trigger='interval', hours=24)
 # Schedule posting to discord every 12 hours
 sched.add_job(func=dailyIsnDiscord, trigger='interval', hours=24)
 # Schedule posting to Blynk
-sched.add_job(func=postBlynk, trigger='interval', minutes=60)
+sched.add_job(func=postBlynk, trigger='interval', minutes=1)
 # start all schedulers
 sched.start()
 # Log all sched jobs
