@@ -330,9 +330,11 @@ async def test(request: Request, status_code=200, username: str = Depends(getAut
 async def home(request: Request):
     logging.info('Solar data enpoint response to client: %s',
                  request.client.host)
-    page = get_data(ISN_URL)
-    isn, flux_10cm, Kp, epoch, date = extract_isn(page)
-    daily = dict(isn=isn, flux_10cm=flux_10cm, Kp=Kp, date=date)
+    ISN_DATA = get_data(ISN_URL)
+    KP_DATA = get_data(KP_URL)
+    isn, flux_10cm, epoch, date = extract_isn(ISN_DATA)
+    kp = extract_kp(KP_DATA)
+    daily = dict(isn=isn, flux_10cm=flux_10cm, Kp=kp, date=date)
     response = dict(solar=daily)
     # responseCode = 200
     # return make_response(jsonify(response), responseCode)
