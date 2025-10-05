@@ -95,8 +95,10 @@ except json.JSONDecodeError:
 
 def dailyIsnIngest():
     logging.info('---  ingest scheduler start ---')
-    data = get_data(ISN_URL)
-    isn, flux_10cm, Kp, epoch, date = extract_isn(data)
+    ISN_DATA = get_data(ISN_URL)
+    KP_DATA = get_data(KP_URL)
+    isn, flux_10cm, epoch, date = extract_isn(ISN_DATA)
+    kp, epoch, date = extract_kp(KP_DATA)
 
     # logging.info('---  Sending to Splunk ---')
     # resp = hec_send(isn, flux_10cm, Kp, epoch)
