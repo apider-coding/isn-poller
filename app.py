@@ -303,8 +303,8 @@ def discord_post(isn, flux_10cm, Kp):
     logging.info('--- Posting to Discord...')
     # msg must be formatted as dict ['content'] = "message"
     msg = dict()
-    msg['content'] = 'ISN: ' + isn + \
-        ', 10cm Flux: ' + flux_10cm + ', Kp: ' + Kp
+    msg['content'] = 'ISN: ' + str(isn) + \
+        ', 10cm Flux: ' + str(flux_10cm) + ', Kp: ' + str(Kp)
     url = f'https://discordapp.com/api/webhooks/{DISCORD_ID}/{DISCORD_TOKEN}'
     headers = {'content-type': 'application/json'}
     try:
