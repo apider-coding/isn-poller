@@ -105,12 +105,12 @@ def dailyIsnIngest():
     # logging.info('Splunk response: %s', resp)
 
     logging.info('---  Sending to Elastic ---')
-    resp = es_send(isn, flux_10cm, Kp, date)
+    resp = es_send(isn, flux_10cm, kp, date)
     logging.info('Elasticsearch response: %s', resp)
 
     logging.info('---  ingest scheduler end  ---')
 
-    dailyData = dict(isn=isn, flux_10cm=flux_10cm, Kp=Kp, date=date)
+    dailyData = dict(isn=isn, flux_10cm=flux_10cm, Kp=kp, date=date)
     return dailyData
 
 
