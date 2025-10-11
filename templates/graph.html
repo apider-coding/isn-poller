@@ -150,7 +150,6 @@
       },
       xaxis: {
         title: 'Date',
-        rangeslider: { visible: true },
         tickangle: -45
       },
       yaxis: {
@@ -272,14 +271,6 @@
         })
         .filter(Boolean);
 
-      const kpAverageTrace = {
-        name: 'Daily Average Kp',
-        x: kpAverageSeries.map((point) => point.timestamp),
-        y: kpAverageSeries.map((point) => point.value),
-        mode: 'lines',
-        type: 'scatter',
-        line: { color: '#2CA02C', width: 2, dash: 'dot', shape: 'linear' }
-      };
       const kpPointsTrace = {
         name: 'Kp Measurements',
         x: normalizedData.kpPoints.map((point) => point.timestamp),
@@ -293,7 +284,7 @@
 
       Plotly.newPlot(
         'kp-graph',
-        [kpAverageTrace, kpPointsTrace],
+        [kpPointsTrace],
         kpLayout
       );
     }
