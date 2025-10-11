@@ -1,5 +1,5 @@
 {
-  "version": "2.0.7",
+  "version": "2.0.8",
   "name": "isn-poller",
   "description": "[![Linting](https://github.com/apider-coding/isn-poller/actions/workflows/lint.yml/badge.svg)](https://github.com/apider-coding/isn-poller/actions/workflows/lint.yml) [![CodeQL](https://github.com/apider-coding/isn-poller/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/apider-coding/isn-poller/actions/workflows/github-code-scanning/codeql) [![GitGuardian scan](https://github.com/apider-coding/isn-poller/actions/workflows/ggscan.yaml/badge.svg)](https://github.com/apider-coding/isn-poller/actions/workflows/ggscan.yaml) [![CI Pipeline](https://github.com/apider-coding/isn-poller/actions/workflows/release.yaml/badge.svg)](https://github.com/apider-coding/isn-poller/actions/workflows/release.yaml) # isn_poller",
   "main": "index.js",
