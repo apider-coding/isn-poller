@@ -20,7 +20,7 @@ templates = Jinja2Templates(directory="templates")
 ISN_URL = 'https://services.swpc.noaa.gov/json/f107_cm_flux.json'
 KP_URL = 'https://services.swpc.noaa.gov/json/planetary_k_index_1m.json'
 CACHE_FILE = 'solar_data_cache.json'
-CACHE_DURATION_SECONDS = 300  # 5 min
+CACHE_DURATION_SECONDS = 900  # 30 min cache duration
 CACHE_VERSION = 3
 SOLAR_CYCLE_IMAGE_URL = 'https://services.swpc.noaa.gov/json/solar-cycle/cycle_update.png'
 
