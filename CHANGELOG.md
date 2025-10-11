@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.0.27](https://github.com/apider-coding/isn-poller/compare/v2.0.26...v2.0.27) (2025-10-11)
+
+
+### Bug Fixes
+
+* color ([c1a48f1](https://github.com/apider-coding/isn-poller/commit/c1a48f11f7d1a35e283e220397a5398af01b4b94))
+* move URLS to conf file ([f137739](https://github.com/apider-coding/isn-poller/commit/f1377394813974abc54d78fbc2f02c434492e6b7))
+
 ### [2.0.26](https://github.com/apider-coding/isn-poller/compare/v2.0.25...v2.0.26) (2025-10-11)
 
 
