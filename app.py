@@ -1,3 +1,4 @@
+from data_urls import ISN_URL, KP_URL
 import json
 import requests
 import urllib3
@@ -29,11 +30,6 @@ apiuser = os.environ.get('APIUSER')
 apipass = os.environ.get('APIPASS')
 DISCORD_ID = os.environ.get('DISCORD_ID')
 DISCORD_TOKEN = os.environ.get('DISCORD_TOKEN')
-
-# Data sources
-ISN_URL = 'https://services.swpc.noaa.gov/json/f107_cm_flux.json'
-KP_URL = 'https://services.swpc.noaa.gov/json/planetary_k_index_1m.json'
-SOLAR_CYCLE_IMAGE_URL = "https://services.swpc.noaa.gov/images/solar-cycle-25.svg"
 
 # Splunk test url and headers
 splunkurl = 'https://splunk.home:8088/services/collector/event?sourcetype=isn_daily'
