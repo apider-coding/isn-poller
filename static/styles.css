@@ -90,14 +90,14 @@ h2 {
   height: 400px;
 }
 
-.solar-cycle-img-container {
+/* .solar-cycle-img-container {
   width: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
   margin-bottom: 0rem;
   flex-grow: 1;
-}
+} */
 
 .solar-cycle-img {
   max-width: 100%;
