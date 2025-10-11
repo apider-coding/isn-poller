@@ -14,7 +14,6 @@ from apscheduler.schedulers.background import BackgroundScheduler
 
 # from fastapi import FastAPI, HTTPException, Depends, Request, Response, status
 from fastapi import FastAPI, HTTPException, Depends, Request, status
-from fastapi.responses import HTMLResponse
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
