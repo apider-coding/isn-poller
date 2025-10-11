@@ -28,16 +28,17 @@
     </div>
 
     <div class="graph-card">
-      <div id="isn-graph" class="graph-container"></div>
-    </div>
-
-    <div class="graph-card">
       <div id="flux-graph" class="graph-container"></div>
     </div>
 
     <div class="graph-card">
       <div id="kp-graph" class="graph-container"></div>
     </div>
+
+    <div class="graph-card">
+      <div id="isn-graph" class="graph-container"></div>
+    </div>
+
   </div>
 
   <footer>
@@ -175,8 +176,8 @@
     } else {
       Plotly.newPlot(
         'isn-graph',
-        [makeTrace('ISN', normalizedData.isn, '#E63946')],
-        makeLayout('International Sunspot Number', 'ISN')
+        [makeTrace('ISN', normalizedData.isn, '#1F77B4')],
+        makeLayout('ISN (from Flux proxy)', 'ISN')
       );
 
       Plotly.newPlot(
