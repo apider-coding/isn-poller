@@ -14,7 +14,11 @@ from apscheduler.schedulers.background import BackgroundScheduler
 
 # from fastapi import FastAPI, HTTPException, Depends, Request, Response, status
 from fastapi import FastAPI, HTTPException, Depends, Request, status
+from fastapi.responses import HTMLResponse
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
+import graph_module
 
 # Set the timezone using pytz
 timezone = pytz.timezone('Europe/Stockholm')
@@ -30,6 +34,7 @@ DISCORD_TOKEN = os.environ.get('DISCORD_TOKEN')
 # Data sources
 ISN_URL = 'https://services.swpc.noaa.gov/json/f107_cm_flux.json'
 KP_URL = 'https://services.swpc.noaa.gov/json/planetary_k_index_1m.json'
+SOLAR_CYCLE_IMAGE_URL = "https://services.swpc.noaa.gov/images/solar-cycle-25.svg"
 
 # Splunk test url and headers
 splunkurl = 'https://splunk.home:8088/services/collector/event?sourcetype=isn_daily'
@@ -46,6 +51,13 @@ esheaders = {'Content-Type': 'application/json'}
 
 app = FastAPI()
 security = HTTPBasic()
+templates = Jinja2Templates(directory="templates")
+
+# Mount static files
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
+# Include the graph module router
+app.include_router(graph_module.router)
 
 
 def getAuth(credentials: HTTPBasicCredentials = Depends(security)):
@@ -331,7 +343,6 @@ async def test(request: Request, status_code=200, username: str = Depends(getAut
     return dict(hostname=hostname, user=username, client=client)
 
 
-@app.get("/")
 @app.get("/api/v1/isn")
 @app.get("/v1/isn")
 async def home(request: Request):

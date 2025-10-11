@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Solar Activity Graphs</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Load Plotly.js from CDN -->
+  <script src="https://cdn.plot.ly/plotly-3.1.0.min.js"></script>
+  <!-- Load our custom CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', path='styles.css') }}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&family=Source+Code+Pro&display=swap"
+    rel="stylesheet">
+</head>
+
+<body>
+  <header>
+    <h1>Solar Activity Monitor</h1>
+  </header>
+
+  <div class="container">
+    <!-- Solar Cycle Prediction Image -->
+    <div class="graph-card">
+      <h2>Solar Cycle Prediction</h2>
+      <div class="solar-cycle-img-container">
+        <img src="{{ solar_cycle_image }}" alt="Solar Cycle Prediction" class="solar-cycle-img">
+      </div>
+    </div>
+
+    <div class="graph-card">
+      <h2>International Sunspot Number (ISN)</h2>
+      <div id="isn-graph" class="graph-container"></div>
+    </div>
+
+    <div class="graph-card">
+      <h2>10.7cm Solar Flux</h2>
+      <div id="flux-graph" class="graph-container"></div>
+    </div>
+
+    <div class="graph-card">
+      <h2>Planetary K-index (Kp)</h2>
+      <div id="kp-graph" class="graph-container"></div>
+    </div>
+  </div>
+
+  <footer>
+    <p>Data source: <a href="https://services.swpc.noaa.gov/" target="_blank">NOAA Space Weather Prediction Center</a>
+    </p>
+  </footer>
+
+  <script type="application/json"
+    id="solar-data">{{ solar_data | default({'dates': [], 'isn': [], 'flux': [], 'kp': [], 'kp_points': [], 'kp_dates': [], 'kp_daily': []}) | tojson }}</script>
+  <script type="application/json" id="solar-error">{{ error_message | default(None) | tojson }}</script>
+
+  <script>
+    const parseJson = (elementId, fallback) => {
+      try {
+        const el = document.getElementById(elementId);
+        if (!el) {
+          return fallback;
+        }
+        const text = el.textContent ? el.textContent.trim() : '';
+        return text ? JSON.parse(text) : fallback;
+      } catch (error) {
+        console.error(`Failed to parse JSON for ${elementId}:`, error);
+        return fallback;
+      }
+    };
+
+    const solarData = parseJson('solar-data', { dates: [], isn: [], flux: [], kp: [] });
+    const errorMessage = parseJson('solar-error', null);
+
+    const ensureArray = (value) => Array.isArray(value) ? value : [];
+
+    const dates = ensureArray(solarData.dates);
+    const isnValues = ensureArray(solarData.isn);
+    const fluxValues = ensureArray(solarData.flux);
+    const kpDates = ensureArray(solarData.kp_dates ?? solarData.kpDates ?? []);
+    const kpValues = ensureArray(solarData.kp_daily ?? solarData.kp);
+    const kpPointValues = ensureArray(solarData.kp_points)
+      .filter((point) => point && point.timestamp && typeof point.value === 'number')
+      .map((point) => ({
+        timestamp: point.timestamp,
+        value: point.value
+      }));
+
+    const normalizedData = {
+      dates,
+      isn: isnValues,
+      flux: fluxValues,
+      kpDaily: kpValues,
+      kpDates,
+      kpPoints: kpPointValues
+    };
+    console.log('Normalized solar data', normalizedData);
+    if (errorMessage) {
+      console.error('Solar data error message', errorMessage);
+    }
+
+    const addAlertStyles = () => {
+      if (document.getElementById('alert-styles')) {
+        return;
+      }
+
+      document.head.insertAdjacentHTML('beforeend', `
+        <style id="alert-styles">
+          .alert {
+            padding: 1rem;
+            margin: 1rem;
+            border-radius: 0.25rem;
+            font-family: 'Roboto', sans-serif;
+          }
+          .alert-error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+          }
+          .alert h3 {
+            margin-top: 0;
+          }
+          .graph-container {
+            min-height: 200px;
+            position: relative;
+          }
+        </style>
+      `);
+    };
+
+    const showNoDataMessage = (message) => {
+      addAlertStyles();
+
+      const alertHtml = `
+        <div class="alert alert-error">
+          <h3>⚠️ No Data Available</h3>
+          <p>${message}</p>
+          <p>Try refreshing the page in a few minutes.</p>
+        </div>
+      `;
+
+      document.body.insertAdjacentHTML('afterbegin', alertHtml);
+    };
+
+    const makeLayout = (title, yTitle) => ({
+      title: {
+        text: title,
+        font: {
+          family: 'Roboto, sans-serif',
+          size: 18
+        }
+      },
+      xaxis: {
+        title: 'Date',
+        rangeslider: { visible: true },
+        tickangle: -45
+      },
+      yaxis: {
+        title: yTitle
+      },
+      margin: { l: 50, r: 30, t: 60, b: 80 },
+      hovermode: 'closest',
+      paper_bgcolor: 'rgba(248,249,250,1)',
+      plot_bgcolor: 'rgba(248,249,250,1)'
+    });
+
+    const makeTrace = (name, values, color) => ({
+      name,
+      x: normalizedData.dates,
+      y: values,
+      mode: 'lines+markers',
+      type: 'scatter',
+      line: { color, width: 2 },
+      marker: { color, size: 6 }
+    });
+
+    if (normalizedData.dates.length === 0) {
+      const message = errorMessage ?? 'Could not retrieve solar activity data from NOAA APIs. Please check the server logs for details.';
+      console.error(message);
+      showNoDataMessage(message);
+    } else {
+      Plotly.newPlot(
+        'isn-graph',
+        [makeTrace('ISN', normalizedData.isn, '#E63946')],
+        makeLayout('International Sunspot Number', 'ISN')
+      );
+
+      Plotly.newPlot(
+        'flux-graph',
+        [makeTrace('10.7cm Flux', normalizedData.flux, '#1F77B4')],
+        makeLayout('10.7cm Solar Flux', 'Flux (sfu)')
+      );
+
+      const kpLayout = makeLayout('Planetary K-index', 'Kp');
+      kpLayout.yaxis = { title: 'Kp', range: [0, 9] };
+
+      const measurementTimes = normalizedData.kpPoints
+        .map((point) => new Date(point.timestamp))
+        .filter((dateObj) => !Number.isNaN(dateObj.getTime()));
+
+      const sixHoursMs = 6 * 60 * 60 * 1000;
+      let kpRangeStart = null;
+      let kpRangeEnd = null;
+
+      const formatDateTime = (dateObj) => {
+        if (!dateObj) {
+          return null;
+        }
+        const pad = (value) => String(value).padStart(2, '0');
+        const year = dateObj.getFullYear();
+        const month = pad(dateObj.getMonth() + 1);
+        const day = pad(dateObj.getDate());
+        const hours = pad(dateObj.getHours());
+        const minutes = pad(dateObj.getMinutes());
+        const seconds = pad(dateObj.getSeconds());
+        return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
+      };
+
+      if (measurementTimes.length > 0) {
+        measurementTimes.sort((a, b) => a - b);
+        const earliestMeasurement = measurementTimes[0];
+        const latestMeasurement = measurementTimes[measurementTimes.length - 1];
+        const proposedStart = new Date(latestMeasurement.getTime() - sixHoursMs);
+        kpRangeStart = proposedStart;
+        kpRangeEnd = latestMeasurement;
+      } else if (normalizedData.kpDates.length > 0) {
+        const parseDate = (value) => {
+          const parsed = new Date(value);
+          return Number.isNaN(parsed.getTime()) ? null : parsed;
+        };
+        const firstDate = parseDate(normalizedData.kpDates[0]);
+        const lastDate = parseDate(normalizedData.kpDates[normalizedData.kpDates.length - 1]);
+        if (firstDate && lastDate) {
+          const proposedStart = new Date(lastDate.getTime() - sixHoursMs);
+          kpRangeStart = proposedStart;
+          kpRangeEnd = lastDate;
+        }
+      }
+
+      kpLayout.xaxis.type = 'date';
+      if (kpRangeStart && kpRangeEnd) {
+        const formattedStart = formatDateTime(kpRangeStart);
+        const formattedEnd = formatDateTime(kpRangeEnd);
+        if (formattedStart && formattedEnd) {
+          kpLayout.xaxis.range = [formattedStart, formattedEnd];
+        }
+      }
+
+      if (kpRangeStart && kpRangeEnd) {
+        const formattedStart = formatDateTime(kpRangeStart);
+        const formattedEnd = formatDateTime(kpRangeEnd);
+        if (formattedStart && formattedEnd) {
+          kpLayout.shapes = [{
+            type: 'line',
+            x0: formattedStart,
+            x1: formattedEnd,
+            y0: 5,
+            y1: 5,
+            line: { color: '#E63946', width: 2, dash: 'dash' }
+          }];
+        }
+      }
+
+      const kpAverageByDate = normalizedData.kpDates.reduce((acc, date, index) => {
+        acc[date] = normalizedData.kpDaily[index];
+        return acc;
+      }, {});
+
+      const kpAverageSeries = normalizedData.kpPoints
+        .map((point) => {
+          const dateKey = point.timestamp.split('T')[0];
+          const avg = kpAverageByDate[dateKey];
+          return avg !== undefined ? { timestamp: point.timestamp, value: avg } : null;
+        })
+        .filter(Boolean);
+
+      const kpAverageTrace = {
+        name: 'Daily Average Kp',
+        x: kpAverageSeries.map((point) => point.timestamp),
+        y: kpAverageSeries.map((point) => point.value),
+        mode: 'lines',
+        type: 'scatter',
+        line: { color: '#2CA02C', width: 2, dash: 'dot', shape: 'linear' }
+      };
+      const kpPointsTrace = {
+        name: 'Kp Measurements',
+        x: normalizedData.kpPoints.map((point) => point.timestamp),
+        y: normalizedData.kpPoints.map((point) => point.value),
+        mode: 'lines+markers',
+        line: { color: '#1F77B4', width: 1, shape: 'linear' },
+        type: 'scatter',
+        marker: { color: '#1F77B4', size: 5, opacity: 0.6 },
+        hovertemplate: 'Kp %{y}<br>%{x}<extra></extra>'
+      };
+
+      Plotly.newPlot(
+        'kp-graph',
+        [kpAverageTrace, kpPointsTrace],
+        kpLayout
+      );
+    }
+
+    window.addEventListener('resize', () => {
+      ['isn-graph', 'flux-graph', 'kp-graph'].forEach((id) => {
+        const element = document.getElementById(id);
+        if (element && element.data && element.data.length) {
+          Plotly.Plots.resize(element);
+        }
+      });
+    });
+  </script>
+</body>
+
+</html>
