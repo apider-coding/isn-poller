@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.0.7](https://github.com/apider-coding/isn-poller/compare/v2.0.6...v2.0.7) (2025-10-11)
+
+
+### Bug Fixes
+
+* add solar activity page ([8d6076b](https://github.com/apider-coding/isn-poller/commit/8d6076b620ee0525f04b7527fe9ea7409651cdbf))
+
 ### [2.0.6](https://github.com/apider-coding/isn-poller/compare/v2.0.5...v2.0.6) (2025-10-05)
 
 
