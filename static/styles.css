@@ -91,7 +91,7 @@ h2 {
 }
 
 .solar-cycle-img-container {
-  width: 100%;
+  width: auto;
   height: 400px;
   display: flex;
   align-items: center;
