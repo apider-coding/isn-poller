@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.0.28](https://github.com/apider-coding/isn-poller/compare/v2.0.27...v2.0.28) (2025-10-11)
+
+
+### Bug Fixes
+
+* HAG six ([a5789ed](https://github.com/apider-coding/isn-poller/commit/a5789edf3f8acfcccf1c987097da882913855c83))
+
 ### [2.0.27](https://github.com/apider-coding/isn-poller/compare/v2.0.26...v2.0.27) (2025-10-11)
 
 
