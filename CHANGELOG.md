@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.0.34](https://github.com/apider-coding/isn-poller/compare/v2.0.33...v2.0.34) (2025-10-12)
+
+
+### Bug Fixes
+
+* add .env support ([88298e5](https://github.com/apider-coding/isn-poller/commit/88298e5d5c7e57bab9c9d307907d1a113979ebc8))
+* layout ([1751667](https://github.com/apider-coding/isn-poller/commit/1751667dc6ad42614697bba0fa09fcdc0069d4f3))
+
 ### [2.0.33](https://github.com/apider-coding/isn-poller/compare/v2.0.32...v2.0.33) (2025-10-12)
 
 
