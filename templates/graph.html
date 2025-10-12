@@ -178,6 +178,7 @@
       hovermode: 'closest',
       paper_bgcolor: 'rgba(255,255,255,0)',
       plot_bgcolor: 'rgba(255,255,255,0)',
+      dragmode: false,
       hoverlabel: {
         bgcolor: '#0f172a',
         bordercolor: '#e2e8f0',
@@ -204,13 +205,39 @@
       Plotly.newPlot(
         'isn-graph',
         [makeTrace('ISN', normalizedData.isn, '#1F77B4')],
-        makeLayout('ISN (from Flux proxy)', 'ISN')
+        makeLayout('ISN (from Flux proxy)', 'ISN'),
+        {
+          displayModeBar: false,
+          modeBarButtons: [],
+          scrollZoom: false,
+          doubleClick: false,
+          showTips: false,
+          responsive: true,
+          dragmode: false,
+          select2d: false,
+          lasso2d: false,
+          editable: false,
+          staticPlot: false
+        }
       );
 
       Plotly.newPlot(
         'flux-graph',
         [makeTrace('10.7cm Flux', normalizedData.flux, '#1F77B4')],
-        makeLayout('10.7cm Solar Flux', 'Flux (sfu)')
+        makeLayout('10.7cm Solar Flux', 'Flux (sfu)'),
+        {
+          displayModeBar: false,
+          modeBarButtons: [],
+          scrollZoom: false,
+          doubleClick: false,
+          showTips: false,
+          responsive: true,
+          dragmode: false,
+          select2d: false,
+          lasso2d: false,
+          editable: false,
+          staticPlot: false
+        }
       );
 
       const kpLayout = makeLayout('Planetary K-index', 'Kp');
@@ -320,9 +347,57 @@
       Plotly.newPlot(
         'kp-graph',
         [kpPointsTrace],
-        kpLayout
+        kpLayout,
+        {
+          displayModeBar: false,
+          modeBarButtons: [],
+          scrollZoom: false,
+          doubleClick: false,
+          showTips: false,
+          responsive: true,
+          dragmode: false,
+          select2d: false,
+          lasso2d: false,
+          editable: false,
+          staticPlot: false
+        }
       );
     }
+
+    // Disable any remaining interactivity
+    setTimeout(() => {
+      ['isn-graph', 'flux-graph', 'kp-graph'].forEach((id) => {
+        const element = document.getElementById(id);
+        if (element) {
+          // Force update the config to disable all interactivity
+          Plotly.update(element, {}, {}, {
+            displayModeBar: false,
+            modeBarButtons: [],
+            scrollZoom: false,
+            doubleClick: false,
+            showTips: false,
+            responsive: true,
+            dragmode: false,
+            select2d: false,
+            lasso2d: false,
+            editable: false,
+            staticPlot: false
+          });
+
+          // Add CSS to disable pointer events on plot area
+          const plotArea = element.querySelector('.plot');
+          if (plotArea) {
+            plotArea.style.pointerEvents = 'none';
+          }
+
+          // Re-enable pointer events for hover layer
+          const hoverLayer = element.querySelector('.hoverlayer');
+          if (hoverLayer) {
+            hoverLayer.style.pointerEvents = 'auto';
+          }
+        }
+      });
+    }, 100);
 
     window.addEventListener('resize', () => {
       ['isn-graph', 'flux-graph', 'kp-graph'].forEach((id) => {

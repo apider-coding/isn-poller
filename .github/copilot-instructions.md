@@ -21,3 +21,8 @@ It is built using python3 and javascript.
 ## UI guidelines
 
 - Application should have a modern and clean design.
+
+## Tools at your disposal
+- #search. for searching the web
+- #context7. for looking up library documentation
+- #chrome-devtools, for debugging web pages
