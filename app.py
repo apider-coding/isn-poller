@@ -12,6 +12,7 @@ import socket
 from datetime import datetime
 import logging
 from apscheduler.schedulers.background import BackgroundScheduler
+from dotenv import load_dotenv
 
 # from fastapi import FastAPI, HTTPException, Depends, Request, Response, status
 from fastapi import FastAPI, HTTPException, Depends, Request, status
@@ -25,6 +26,9 @@ timezone = pytz.timezone('Europe/Stockholm')
 os.environ['TZ'] = 'Europe/Stockholm'
 if hasattr(time, 'tzset'):
     time.tzset()
+
+# Load environment variables from .env file if it exists
+load_dotenv()
 
 apiuser = os.environ.get('APIUSER')
 apipass = os.environ.get('APIPASS')
