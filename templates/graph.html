@@ -146,35 +146,19 @@
       document.body.insertAdjacentHTML('afterbegin', alertHtml);
     };
 
-    const makeLayout = (title, yTitle) => ({
-      title: {
-        text: title,
-        font: {
-          family: 'Roboto, sans-serif',
-          size: 20,
-          color: '#0f172a'
-        }
-      },
+    const makeLayout = (yTitle) => ({
       xaxis: {
-        title: {
-          text: 'Date',
-          font: { family: 'Roboto, sans-serif', size: 14, color: '#64748b' }
-        },
         tickangle: -45,
         tickfont: { family: 'Roboto, sans-serif', size: 12, color: '#475569' },
         gridcolor: '#e2e8f0',
         linecolor: '#cbd5e1'
       },
       yaxis: {
-        title: {
-          text: yTitle,
-          font: { family: 'Roboto, sans-serif', size: 14, color: '#64748b' }
-        },
         tickfont: { family: 'Roboto, sans-serif', size: 12, color: '#475569' },
         gridcolor: '#e2e8f0',
         linecolor: '#cbd5e1'
       },
-      margin: { l: 60, r: 40, t: 80, b: 100 },
+      margin: { l: 30, r: 20, t: 28, b: 38 },
       hovermode: 'closest',
       paper_bgcolor: 'rgba(255,255,255,0)',
       plot_bgcolor: 'rgba(255,255,255,0)',
@@ -240,12 +224,8 @@
         }
       );
 
-      const kpLayout = makeLayout('Planetary K-index', 'Kp');
+      const kpLayout = makeLayout('Kp');
       kpLayout.yaxis = {
-        title: {
-          text: 'Kp',
-          font: { family: 'Roboto, sans-serif', size: 14, color: '#64748b' }
-        },
         range: [0, 9],
         tickfont: { family: 'Roboto, sans-serif', size: 12, color: '#475569' },
         gridcolor: '#e2e8f0',
