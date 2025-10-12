@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.0.30](https://github.com/apider-coding/isn-poller/compare/v2.0.29...v2.0.30) (2025-10-12)
+
+
+### Bug Fixes
+
+* non-interactive static graphs ([1b1aa93](https://github.com/apider-coding/isn-poller/commit/1b1aa9314a373b124b1404d6442a9deb66e32388))
+
 ### [2.0.29](https://github.com/apider-coding/isn-poller/compare/v2.0.28...v2.0.29) (2025-10-12)
 
 
