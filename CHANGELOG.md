@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.0.29](https://github.com/apider-coding/isn-poller/compare/v2.0.28...v2.0.29) (2025-10-12)
+
+
+### Bug Fixes
+
+* add copilot instructions ([7cce19a](https://github.com/apider-coding/isn-poller/commit/7cce19a044ff96a743365cf80adbbc7525181e0c))
+* more modern look ([e796aea](https://github.com/apider-coding/isn-poller/commit/e796aeabd18c1617475d103b300955047c8cb803))
+* move file ([020d6c9](https://github.com/apider-coding/isn-poller/commit/020d6c98ce50e7f5222f876c7715199ab2f853f9))
+* Potential fix for code scanning alert no. 178: Workflow does not contain permissions ([a034c0c](https://github.com/apider-coding/isn-poller/commit/a034c0cbe8ab34d91a6d430a7b16995d12479828))
+
 ### [2.0.28](https://github.com/apider-coding/isn-poller/compare/v2.0.27...v2.0.28) (2025-10-11)
 
 
