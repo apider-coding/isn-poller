@@ -21,13 +21,27 @@
 
 <body>
   <header>
-    <h1>
-      <i class="fas fa-sun" aria-hidden="true"></i>
-      Solar Activity
-    </h1>
-    <p class="description">
-      Real-time solar activity and geomagnetic conditions
-    </p>
+    <div class="header-content">
+      <div class="header-title">
+        <h1>
+          <i class="fas fa-sun" aria-hidden="true"></i>
+          Solar Activity
+        </h1>
+        <p class="description">
+          Real-time solar activity and geomagnetic conditions
+        </p>
+      </div>
+      <div class="header-indicators">
+        <div class="indicator-card" id="flux-indicator">
+          <span class="indicator-label">10.7cm Flux</span>
+          <span class="indicator-value" id="flux-value">--</span>
+        </div>
+        <div class="indicator-card" id="kp-indicator">
+          <span class="indicator-label">Kp Index</span>
+          <span class="indicator-value" id="kp-value">--</span>
+        </div>
+      </div>
+    </div>
   </header>
 
   <main class="container">
@@ -131,6 +145,26 @@
     if (errorMessage) {
       console.error('Solar data error message', errorMessage);
     }
+
+    // Update header indicators with latest values
+    const updateIndicators = () => {
+      // Get latest flux value
+      const latestFlux = normalizedData.flux.length > 0 ? normalizedData.flux[normalizedData.flux.length - 1] : null;
+      const fluxElement = document.getElementById('flux-value');
+      if (fluxElement && latestFlux !== null) {
+        fluxElement.textContent = latestFlux.toFixed(1);
+      }
+
+      // Get latest Kp value
+      const latestKp = normalizedData.kpDaily.length > 0 ? normalizedData.kpDaily[normalizedData.kpDaily.length - 1] : null;
+      const kpElement = document.getElementById('kp-value');
+      if (kpElement && latestKp !== null) {
+        kpElement.textContent = latestKp.toFixed(1);
+      }
+    };
+
+    // Update indicators immediately
+    updateIndicators();
 
     const showNoDataMessage = (message) => {
       addAlertStyles();
