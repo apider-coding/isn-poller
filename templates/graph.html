@@ -1,48 +1,85 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
-  <title>Solar Activity Graphs</title>
+  <title>Solar Activity</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Real-time solar activity monitoring with ISN, solar flux, and K-index data">
+  <meta name="theme-color" content="#0f172a">
   <!-- Load Plotly.js from CDN -->
   <script src="https://cdn.plot.ly/plotly-3.1.0.min.js"></script>
   <!-- Load our custom CSS -->
   <link rel="stylesheet" href="{{ url_for('static', path='styles.css') }}">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&family=Source+Code+Pro&display=swap"
+  <link
+    href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700&family=JetBrains+Mono&display=swap"
     rel="stylesheet">
+  <!-- Add some icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 
 <body>
   <header>
-    <h1>Solar Activity Monitor</h1>
+    <h1>
+      <i class="fas fa-sun" aria-hidden="true"></i>
+      Solar Activity
+    </h1>
+    <p class="description">
+      Real-time monitoring of solar activity and geomagnetic conditions
+    </p>
   </header>
 
-  <div class="container">
+  <main class="container">
     <!-- Solar Cycle Prediction Image -->
-    <div class="graph-card">
+    <section class="graph-card" aria-labelledby="solar-cycle-title">
+      <h2 id="solar-cycle-title">
+        <i class="fas fa-chart-line" aria-hidden="true"></i>
+        Solar Cycle Prediction
+      </h2>
       <div class="solar-cycle-img-container">
-        <img src="{{ solar_cycle_image }}" alt="Solar Cycle Prediction" class="solar-cycle-img">
+        <img src="{{ solar_cycle_image }}" alt="Current solar cycle prediction chart showing sunspot activity trends"
+          class="solar-cycle-img" loading="lazy">
       </div>
-    </div>
+    </section>
 
-    <div class="graph-card">
-      <div id="flux-graph" class="graph-container"></div>
-    </div>
+    <section class="graph-card" aria-labelledby="kp-title">
+      <h2 id="kp-title">
+        <i class="fas fa-chart-line" aria-hidden="true"></i>
+        Planetary K-Index
+      </h2>
+      <div id="kp-graph" class="graph-container" role="img"
+        aria-label="Interactive chart showing planetary K-index measurements over time"></div>
+    </section>
 
-    <div class="graph-card">
-      <div id="kp-graph" class="graph-container"></div>
-    </div>
+    <section class="graph-card" aria-labelledby="flux-title">
+      <h2 id="flux-title">
+        <i class="fas fa-chart-line" aria-hidden="true"></i>
+        10.7cm Solar Flux
+      </h2>
+      <div id="flux-graph" class="graph-container" role="img"
+        aria-label="Interactive chart showing 10.7cm solar flux measurements over time"></div>
+    </section>
 
-    <div class="graph-card">
-      <div id="isn-graph" class="graph-container"></div>
-    </div>
+    <section class="graph-card" aria-labelledby="isn-title">
+      <h2 id="isn-title">
+        <i class="fas fa-chart-line" aria-hidden="true"></i>
+        International Sunspot Number (ISN)
+      </h2>
+      <div id="isn-graph" class="graph-container" role="img"
+        aria-label="Interactive chart showing International Sunspot Number measurements over time"></div>
+    </section>
 
-  </div>
+  </main>
 
   <footer>
-    <p>Data source: <a href="https://services.swpc.noaa.gov/" target="_blank">NOAA Space Weather Prediction Center</a>
+    <p>
+      <i class="fas fa-database" aria-hidden="true"></i>
+      Data source:
+      <a href="https://services.swpc.noaa.gov/" target="_blank" rel="noopener noreferrer">
+        NOAA Space Weather Prediction Center
+        <i class="fas fa-external-link-alt" aria-hidden="true"></i>
+      </a>
     </p>
   </footer>
 
@@ -95,35 +132,6 @@
       console.error('Solar data error message', errorMessage);
     }
 
-    const addAlertStyles = () => {
-      if (document.getElementById('alert-styles')) {
-        return;
-      }
-
-      document.head.insertAdjacentHTML('beforeend', `
-        <style id="alert-styles">
-          .alert {
-            padding: 1rem;
-            margin: 1rem;
-            border-radius: 0.25rem;
-            font-family: 'Roboto', sans-serif;
-          }
-          .alert-error {
-            background-color: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-          }
-          .alert h3 {
-            margin-top: 0;
-          }
-          .graph-container {
-            min-height: 200px;
-            position: relative;
-          }
-        </style>
-      `);
-    };
-
     const showNoDataMessage = (message) => {
       addAlertStyles();
 
@@ -143,20 +151,38 @@
         text: title,
         font: {
           family: 'Roboto, sans-serif',
-          size: 18
+          size: 20,
+          color: '#0f172a'
         }
       },
       xaxis: {
-        title: 'Date',
-        tickangle: -45
+        title: {
+          text: 'Date',
+          font: { family: 'Roboto, sans-serif', size: 14, color: '#64748b' }
+        },
+        tickangle: -45,
+        tickfont: { family: 'Roboto, sans-serif', size: 12, color: '#475569' },
+        gridcolor: '#e2e8f0',
+        linecolor: '#cbd5e1'
       },
       yaxis: {
-        title: yTitle
+        title: {
+          text: yTitle,
+          font: { family: 'Roboto, sans-serif', size: 14, color: '#64748b' }
+        },
+        tickfont: { family: 'Roboto, sans-serif', size: 12, color: '#475569' },
+        gridcolor: '#e2e8f0',
+        linecolor: '#cbd5e1'
       },
-      margin: { l: 50, r: 30, t: 60, b: 80 },
+      margin: { l: 60, r: 40, t: 80, b: 100 },
       hovermode: 'closest',
-      paper_bgcolor: 'rgba(248,249,250,1)',
-      plot_bgcolor: 'rgba(248,249,250,1)'
+      paper_bgcolor: 'rgba(255,255,255,0)',
+      plot_bgcolor: 'rgba(255,255,255,0)',
+      hoverlabel: {
+        bgcolor: '#0f172a',
+        bordercolor: '#e2e8f0',
+        font: { family: 'Roboto, sans-serif', size: 12, color: '#f8fafc' }
+      }
     });
 
     const makeTrace = (name, values, color) => ({
@@ -165,8 +191,9 @@
       y: values,
       mode: 'lines+markers',
       type: 'scatter',
-      line: { color, width: 2 },
-      marker: { color, size: 6 }
+      line: { color: '#f59e0b', width: 3 },
+      marker: { color: '#f59e0b', size: 6, line: { color: '#d97706', width: 1 } },
+      hovertemplate: '%{y}<br>%{x}<extra></extra>'
     });
 
     if (normalizedData.dates.length === 0) {
@@ -187,7 +214,16 @@
       );
 
       const kpLayout = makeLayout('Planetary K-index', 'Kp');
-      kpLayout.yaxis = { title: 'Kp', range: [0, 9] };
+      kpLayout.yaxis = {
+        title: {
+          text: 'Kp',
+          font: { family: 'Roboto, sans-serif', size: 14, color: '#64748b' }
+        },
+        range: [0, 9],
+        tickfont: { family: 'Roboto, sans-serif', size: 12, color: '#475569' },
+        gridcolor: '#e2e8f0',
+        linecolor: '#cbd5e1'
+      };
 
       const measurementTimes = normalizedData.kpPoints
         .map((point) => new Date(point.timestamp))
@@ -251,7 +287,8 @@
             x1: formattedEnd,
             y0: 5,
             y1: 5,
-            line: { color: '#E63946', width: 2, dash: 'dash' }
+            line: { color: '#ef4444', width: 2, dash: 'dash' },
+            opacity: 0.7
           }];
         }
       }
@@ -274,9 +311,9 @@
         x: normalizedData.kpPoints.map((point) => point.timestamp),
         y: normalizedData.kpPoints.map((point) => point.value),
         mode: 'lines+markers',
-        line: { color: '#1F77B4', width: 1, shape: 'linear' },
+        line: { color: '#f59e0b', width: 2, shape: 'linear' },
         type: 'scatter',
-        marker: { color: '#1F77B4', size: 5, opacity: 0.6 },
+        marker: { color: '#f59e0b', size: 6, opacity: 0.8, line: { color: '#d97706', width: 1 } },
         hovertemplate: 'Kp %{y}<br>%{x}<extra></extra>'
       };
 
