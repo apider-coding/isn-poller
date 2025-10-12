@@ -19,7 +19,7 @@ templates = Jinja2Templates(directory="templates")
 
 # --- Constants ---
 CACHE_FILE = 'solar_data_cache.json'
-CACHE_DURATION_SECONDS = 900  # 30 min cache duration
+CACHE_DURATION_SECONDS = 60  # 1 min cache duration for more frequent updates
 CACHE_VERSION = 3
 
 # --- Helper Functions ---
@@ -218,6 +218,9 @@ async def graph_page(request: Request):
     final_data["kp"] = list(final_data["kp_daily"])  # backward compatibility
 
     final_data["kp_points"] = kp_measurements
+
+    # Add timestamp for when data was last updated
+    final_data["last_updated"] = datetime.now().isoformat()
 
     logger.info(f"Processed data for {len(final_data['dates'])} dates.")
     if final_data["dates"]:

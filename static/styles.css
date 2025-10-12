@@ -67,6 +67,17 @@ header::before {
   text-align: center;
 }
 
+.data-timestamp {
+  margin-top: 0.5rem;
+  opacity: 0.7;
+}
+
+.data-timestamp small {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.7);
+  font-family: 'Roboto', sans-serif;
+}
+
 .header-indicators {
   display: flex;
   gap: 1rem;
@@ -217,6 +228,17 @@ footer a:hover {
   text-decoration: underline;
 }
 
+footer .data-timestamp {
+  margin-top: 0.5rem;
+  opacity: 0.7;
+}
+
+footer .data-timestamp small {
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.7);
+  font-family: 'Roboto', sans-serif;
+}
+
 /* Data point styling for graphs */
 .js-plotly-plot .plotly .scatter .points path {
   stroke-width: 1px !important;
@@ -347,6 +369,10 @@ footer a:hover {
 
   footer {
     padding: 1.5rem 1rem;
+  }
+
+  footer .data-timestamp small {
+    font-size: 0.7rem;
   }
 }
 

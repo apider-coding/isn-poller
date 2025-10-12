@@ -95,6 +95,9 @@
         <i class="fas fa-external-link-alt" aria-hidden="true"></i>
       </a>
     </p>
+    <div class="data-timestamp" id="data-timestamp">
+      <small>Last updated: <span id="timestamp-value">--</span></small>
+    </div>
   </footer>
 
   <script type="application/json"
@@ -160,6 +163,14 @@
       const kpElement = document.getElementById('kp-value');
       if (kpElement && latestKp !== null) {
         kpElement.textContent = latestKp.toFixed(1);
+      }
+
+      // Update timestamp
+      const timestampElement = document.getElementById('timestamp-value');
+      if (timestampElement && solarData.last_updated) {
+        const date = new Date(solarData.last_updated);
+        const formatted = date.toLocaleString();
+        timestampElement.textContent = formatted;
       }
     };
 
