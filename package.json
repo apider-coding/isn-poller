@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "release": "standard-version",
-    "dev": "uvicorn --host localhost --workers 1 app:app"
+    "dev": "uvicorn --host localhost --workers 1 app:app --reload"
   },
   "repository": {
     "type": "git",
