@@ -23,7 +23,7 @@
 body {
   font-family: 'Roboto', sans-serif;
   line-height: 1.6;
-  /* color: var(--primary-color); */
+  color: var(--primary-color);
   background: linear-gradient(135deg, var(--background-color) 0%, #e2e8f0 100%);
   min-height: 100vh;
   padding: 0;
