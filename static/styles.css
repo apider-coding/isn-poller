@@ -23,8 +23,8 @@
 body {
   font-family: 'Roboto', sans-serif;
   line-height: 1.6;
-  color: var(--primary-color);
-  background: linear-gradient(135deg, var(--background-color) 0%, #e2e8f0 100%);
+  background: var(--primary-color);
+  /* background: linear-gradient(135deg, var(--background-color) 0%, #e2e8f0 100%); */
   min-height: 100vh;
   padding: 0;
   margin: 0;
@@ -49,8 +49,9 @@ header::before {
   left: 0;
   right: 0;
   bottom: 0;
-  background: radial-gradient(circle at 30% 20%, rgba(245, 158, 11, 0.1) 0%, transparent 50%),
-    radial-gradient(circle at 70% 80%, rgba(245, 158, 11, 0.1) 0%, transparent 50%);
+  background: env(var(--primary-color));
+  /* background: radial-gradient(circle at 30% 20%, rgba(245, 158, 11, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 70% 80%, rgba(245, 158, 11, 0.1) 0%, transparent 50%); */
   pointer-events: none;
 }
 
@@ -165,11 +166,12 @@ h2 {
   max-width: 1400px;
   width: 100%;
   margin: 0 auto;
-  padding: 1rem 0 0 0;
+  padding: 1rem 1rem 0 1rem;
   display: grid;
   grid-template-columns: 1fr;
   gap: 0.5rem;
   align-items: start;
+  color: var(--primary-color);
 }
 
 .graph-card {
@@ -297,7 +299,6 @@ footer .data-timestamp small {
 /* Responsive layout */
 @media (max-width: 1024px) {
   .container {
-    padding: 1rem 0 0 0;
     gap: 0.5rem;
   }
 
