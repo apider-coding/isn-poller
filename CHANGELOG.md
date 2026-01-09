@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.0.46](https://github.com/apider-coding/isn-poller/compare/v2.0.45...v2.0.46) (2026-01-09)
+
+
+### Bug Fixes
+
+* bump pydantic-core==2.41.4 ([dcbb49d](https://github.com/apider-coding/isn-poller/commit/dcbb49da21e65b5d40a08d54d89a6d771adb8eed))
+
 ### [2.0.45](https://github.com/apider-coding/isn-poller/compare/v2.0.44...v2.0.45) (2026-01-09)
 
 
