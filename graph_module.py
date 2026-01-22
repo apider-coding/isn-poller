@@ -26,8 +26,11 @@ CACHE_VERSION = 3
 
 
 def flux_to_isn(flux):
-    """Converts F10.7cm flux to an estimated International Sunspot Number (ISN)."""
-    return max(0, int(0.63 * flux - 2.5))
+    """Converts F10.7cm flux to an estimated International Sunspot Number (ISN).
+
+    Formula: ISN ≈ (1.14 * flux) - 73.21
+    """
+    return max(0, int(1.14 * flux - 73.21))
 
 
 async def fetch_json(client, url):

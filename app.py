@@ -43,7 +43,7 @@ splunkheaders = {
 # Splunk index
 index = 'isn'
 
-# Elasticearch params & headers
+# Elasticsearch params & headers
 esurl = 'http://elasticsearch.home:9200/solar/_doc/'
 esheaders = {'Content-Type': 'application/json'}
 
@@ -106,65 +106,78 @@ except json.JSONDecodeError:
 
 def dailyIsnIngest():
     logging.info('---  ingest scheduler start ---')
-    ISN_DATA = get_data(ISN_URL)
-    KP_DATA = get_data(KP_URL)
-    isn, flux_10cm, epoch, date = extract_isn(ISN_DATA)
-    kp, epoch, date = extract_kp(KP_DATA)
+    try:
+        ISN_DATA = get_data(ISN_URL)
+        KP_DATA = get_data(KP_URL)
+        isn, flux_10cm, date = extract_isn(ISN_DATA)
+        kp, date = extract_kp(KP_DATA)
 
-    # logging.info('---  Sending to Splunk ---')
-    # resp = hec_send(isn, flux_10cm, Kp, epoch)
-    # logging.info('Splunk response: %s', resp)
+        # logging.info('---  Sending to Splunk ---')
+        # resp = hec_send(isn, flux_10cm, Kp, epoch)
+        # logging.info('Splunk response: %s', resp)
 
-    logging.info('---  Sending to Elastic ---')
-    resp = es_send(isn, flux_10cm, kp, date)
-    logging.info('Elasticsearch response: %s', resp)
+        logging.info('---  Sending to Elastic ---')
+        resp = es_send(isn, flux_10cm, kp, date)
+        logging.info('Elasticsearch response: %s', resp)
 
-    logging.info('---  ingest scheduler end  ---')
+        logging.info('---  ingest scheduler end  ---')
 
-    dailyData = dict(isn=isn, flux_10cm=flux_10cm, Kp=kp, date=date)
-    return dailyData
+        dailyData = dict(isn=isn, flux_10cm=flux_10cm, Kp=kp, date=date)
+        return dailyData
+    except Exception as e:
+        logging.error('--- Ingest scheduler failed: %s', e)
+        logging.info('---  ingest scheduler end (with error) ---')
+        return None
 
 
 def dailyIsnDiscord():
     logging.info('--- Discord scheduler start ---')
-    ISN_DATA = get_data(ISN_URL)
-    KP_DATA = get_data(KP_URL)
-    isn, flux_10cm, epoch, date = extract_isn(ISN_DATA)
-    kp, epoch, date = extract_kp(KP_DATA)
+    try:
+        ISN_DATA = get_data(ISN_URL)
+        KP_DATA = get_data(KP_URL)
+        isn, flux_10cm, date = extract_isn(ISN_DATA)
+        kp, date = extract_kp(KP_DATA)
 
-    resp = discord_post(isn, flux_10cm, kp)
-    logging.info('Discord: %s', resp)
-    logging.info('---  Discord scheduler end  ---')
+        resp = discord_post(isn, flux_10cm, kp)
+        logging.info('Discord: %s', resp)
+        logging.info('---  Discord scheduler end  ---')
+    except Exception as e:
+        logging.error('--- Discord scheduler failed: %s', e)
+        logging.info('---  Discord scheduler end (with error) ---')
 
 
 def postBlynk():
     logging.info('--- Blynk scheduler start ---')
-    ISN_DATA = get_data(ISN_URL)
-    KP_DATA = get_data(KP_URL)
-    isn, flux_10cm, epoch, date = extract_isn(ISN_DATA)
-    kp, epoch, date = extract_kp(KP_DATA)
+    try:
+        ISN_DATA = get_data(ISN_URL)
+        KP_DATA = get_data(KP_URL)
+        isn, flux_10cm, date = extract_isn(ISN_DATA)
+        kp, date = extract_kp(KP_DATA)
 
-    # blynk.virtual_write(31, isn)
-    # blynk.virtual_write(32, flux_10cm)
-    # blynk.virtual_write(33, Kp)
+        # blynk.virtual_write(31, isn)
+        # blynk.virtual_write(32, flux_10cm)
+        # blynk.virtual_write(33, Kp)
 
-    def pinurl(pin, metric):
-        pinUrl = BLYNK_API_URL + '/' + BLYNK_TOKEN + \
-            '/update/' + pin + '?value=' + str(metric)  # Convert metric to string
-        return pinUrl
+        def pinurl(pin, metric):
+            pinUrl = BLYNK_API_URL + '/' + BLYNK_TOKEN + \
+                '/update/' + pin + '?value=' + str(metric)  # Convert metric to string
+            return pinUrl
 
-    pinUrl = pinurl('V31', isn)
-    requests.get(pinUrl, verify=False)
+        pinUrl = pinurl('V31', isn)
+        requests.get(pinUrl, verify=False)
 
-    pinUrl = pinurl('V32', flux_10cm)
-    requests.get(pinUrl, verify=False)
+        pinUrl = pinurl('V32', flux_10cm)
+        requests.get(pinUrl, verify=False)
 
-    pinUrl = pinurl('V33', kp)
-    requests.get(pinUrl, verify=False)
+        pinUrl = pinurl('V33', kp)
+        requests.get(pinUrl, verify=False)
 
-    logging.info('Posted to Blynk: ISN, Flux, Kp; %s %s %s',
-                 isn, flux_10cm, kp)
-    logging.info('---  Blynk scheduler end  ---')
+        logging.info('Posted to Blynk: ISN, Flux, Kp; %s %s %s',
+                     isn, flux_10cm, kp)
+        logging.info('---  Blynk scheduler end  ---')
+    except Exception as e:
+        logging.error('--- Blynk scheduler failed: %s', e)
+        logging.info('---  Blynk scheduler end (with error) ---')
 
 
 def get_data(url):
@@ -184,134 +197,111 @@ def get_data(url):
 
 
 def extract_kp(data):
+    logging.info('Extracting Kp-index data...')
+    if not data:
+        raise ValueError("No data found in the response.")
+
+    # Sort data by time_tag to get the most recent entry
+    data.sort(key=lambda x: x['time_tag'], reverse=True)
+    latest_entry = data[0]
+
+    kp = latest_entry.get('kp_index', None)
+    if kp is None:
+        raise ValueError("Kp value not found in the response.")
+    # Convert kp to an integer
     try:
-        logging.info('Extracting Kp-index data...')
-        if not data:
-            raise ValueError("No data found in the response.")
-
-        # Sort data by time_tag to get the most recent entry
-        data.sort(key=lambda x: x['time_tag'], reverse=True)
-        latest_entry = data[0]
-
-        kp = latest_entry.get('kp_index', None)
-        if kp is None:
-            raise ValueError("Kp value not found in the response.")
-        # Convert kp to an integer
-        try:
-            kp = int(kp)
-        except ValueError as e:
-            logging.error('Failed to convert kp to integer: %s', e)
-            raise
-        time_tag = latest_entry['time_tag']
-        date_object = datetime.strptime(time_tag, '%Y-%m-%dT%H:%M:%S')
-        epoch = time.mktime(date_object.timetuple())
-        esdate_object = date_object.strftime('%Y-%m-%dT%H:%M:%S')
-
-        logging.info('Kp Index: %s', kp)
-    except json.JSONDecodeError as e:
-        logging.error('JSON decode error: %s', e)
+        kp = int(kp)
     except ValueError as e:
-        logging.error('Value Error: %s', e)
-    except Exception as e:
-        logging.error('Extract data, other error: %s', e)
-    else:
-        return kp, epoch, esdate_object
-        # return kp
+        logging.error('Failed to convert kp to integer: %s', e)
+        raise
+    time_tag = latest_entry['time_tag']
+    date_object = datetime.strptime(time_tag, '%Y-%m-%dT%H:%M:%S')
+    # epoch = time.mktime(date_object.timetuple())
+    esdate_object = date_object.strftime('%Y-%m-%dT%H:%M:%S')
+
+    logging.info('Kp Index: %s', kp)
+    return kp, esdate_object
 
 
 def extract_isn(data):
+    logging.info('Extracting 10.7cm Flux data...')
+    if not data:
+        raise ValueError("No data found in the response.")
+
+    # Sort data by time_tag to get the most recent entry
+    data.sort(key=lambda x: x['time_tag'], reverse=True)
+    latest_entry = data[0]
+
+    flux_10cm = latest_entry.get('flux', None)
+    if flux_10cm is None:
+        raise ValueError("Flux value not found in the response.")
+    # Convert flux_10cm to an integer
     try:
-        logging.info('Extracting 10.7cm Flux data...')
-        if not data:
-            raise ValueError("No data found in the response.")
-
-        # Sort data by time_tag to get the most recent entry
-        data.sort(key=lambda x: x['time_tag'], reverse=True)
-        latest_entry = data[0]
-
-        flux_10cm = latest_entry.get('flux', None)
-        if flux_10cm is None:
-            raise ValueError("Flux value not found in the response.")
-        # Convert flux_10cm to an integer
-        try:
-            flux_10cm = int(flux_10cm)
-        except ValueError as e:
-            logging.error('Failed to convert flux_10cm to integer: %s', e)
-            raise
-        # Extract other necessary values (if needed)
-        time_tag = latest_entry['time_tag']
-        date_object = datetime.strptime(time_tag, '%Y-%m-%dT%H:%M:%S')
-        epoch = time.mktime(date_object.timetuple())
-        esdate_object = date_object.strftime('%Y-%m-%dT%H:%M:%S')
-
-        # Assuming isn and Kp are not available in the new format
-        # Calculate isn based on the formula
-        logging.info('Calculating ISN from 10.7cm flux proxy, (isn=int((1.14)*flux_10cm-73.21))')
-        isn = int((1.14) * flux_10cm - 73.21)
-        logging.info('10.7cm flux: %s, proxied ISN: %s', flux_10cm, isn)
-
-    except json.JSONDecodeError as e:
-        logging.error('JSON decode error: %s', e)
+        flux_10cm = int(flux_10cm)
     except ValueError as e:
-        logging.error('Value Error: %s', e)
-    except Exception as e:
-        logging.error('Extract data, other error: %s', e)
-    else:
-        return isn, flux_10cm, epoch, esdate_object
+        logging.error('Failed to convert flux_10cm to integer: %s', e)
+        raise
+    # Extract other necessary values (if needed)
+    time_tag = latest_entry['time_tag']
+    date_object = datetime.strptime(time_tag, '%Y-%m-%dT%H:%M:%S')
+    # epoch = time.mktime(date_object.timetuple())
+    esdate_object = date_object.strftime('%Y-%m-%dT%H:%M:%S')
+
+    # Assuming isn and Kp are not available in the new format
+    # Calculate ISN based on the formula: ISN ≈ (1.14 * flux_10cm) - 73.21
+    logging.info('Calculating ISN from 10.7cm flux proxy, (isn=max(0, int(1.14*flux_10cm-73.21)))')
+    isn = max(0, int(1.14 * flux_10cm - 73.21))
+    logging.info('10.7cm flux: %s, proxied ISN: %s', flux_10cm, isn)
+
+    return isn, flux_10cm, esdate_object
 
 # Build and post payload to Splunk HEC
 
 
-def hec_send(isn, flux_10cm, Kp, date):
-    logging.info('--- Posting to Splunk...')
-    payload = {}
-    payload['time'] = date
-    payload['index'] = index
-    payload['event'] = {}
-    payload['event']['isn'] = isn
-    payload['event']['flux_10cm'] = flux_10cm
-    payload['event']['Kp'] = Kp
+# def hec_send(isn, flux_10cm, Kp, date):
+#     logging.info('--- Posting to Splunk...')
+#     payload = {}
+#     payload['time'] = date
+#     payload['index'] = index
+#     payload['event'] = {}
+#     payload['event']['isn'] = isn
+#     payload['event']['flux_10cm'] = flux_10cm
+#     payload['event']['Kp'] = Kp
 
-    # Post to splunk
-    try:
-        r = requests.post(splunkurl, data=json.dumps(payload),
-                          headers=splunkheaders, verify=False)
-        r.raise_for_status()
-    except requests.exceptions.HTTPError as e:
-        logging.error('--- Splunk post failed. Error: %s', e)
-    except Exception as e:
-        logging.error('Data load, some other error: %s', e)
-    else:
-        return r
+#     # Post to splunk
+#     try:
+#         r = requests.post(splunkurl, data=json.dumps(payload),
+#                           headers=splunkheaders, verify=False)
+#         r.raise_for_status()
+#     except requests.exceptions.HTTPError as e:
+#         logging.error('--- Splunk post failed. Error: %s', e)
+#     except Exception as e:
+#         logging.error('Data load, some other error: %s', e)
+#     else:
+#         return r
 
 # Build and post payload to Splunk HEC
 
 
-def es_send(isn, flux_10cm, Kp, date):
+def es_send(isn, flux_10cm, kp, date):
     logging.info('--- Posting to Elasticsearch...')
     # Need to convert to number
     isn = float(isn)
     flux_10cm = float(flux_10cm)
-    Kp = float(Kp)
+    kp = float(kp)
 
     # date = str(date)
     payload = {}
     payload['@timestamp'] = date
     payload['isn'] = isn
     payload['flux_10cm'] = flux_10cm
-    payload['Kp'] = Kp
+    payload['Kp'] = kp
 
     # Post to Elasticsearch
-    try:
-        r = requests.post(esurl, data=json.dumps(payload),
-                          headers=esheaders, verify=False)
-        r.raise_for_status()
-    except requests.exceptions.HTTPError as e:
-        logging.error('--- Elasticsearch post failed. Error: %s', e)
-    except Exception as e:
-        logging.error('Data load, some other error: %s', e)
-    else:
-        return r
+    r = requests.post(esurl, data=json.dumps(payload),
+                      headers=esheaders, verify=False)
+    r.raise_for_status()
+    return r
 
 
 def discord_post(isn, flux_10cm, Kp):
@@ -330,8 +320,7 @@ def discord_post(isn, flux_10cm, Kp):
             '--- Discord post failed, %s load failed. %s Error: %s', url, r, err)
         return None
     except Exception as e:
-        return None
-        logging.error('Data load, some other error: %s', e)
+        logging.error('Discord post failed, some other error: %s', e)
         return None
     else:
         return r
@@ -340,8 +329,7 @@ def discord_post(isn, flux_10cm, Kp):
 
 
 @app.get("/test")
-async def test(request: Request, status_code=200, username: str = Depends(getAuth)):  # <- uses auth decorator
-    # response.status_code = 201
+async def test(request: Request, username: str = Depends(getAuth)):  # <- uses auth decorator
     client = request.client.host
     hostname = socket.gethostname()
     return dict(hostname=hostname, user=username, client=client)
@@ -352,15 +340,22 @@ async def test(request: Request, status_code=200, username: str = Depends(getAut
 async def home(request: Request):
     logging.info('Solar data response to client: %s',
                  request.client.host)
-    ISN_DATA = get_data(ISN_URL)
-    KP_DATA = get_data(KP_URL)
-    isn, flux_10cm, epoch, date = extract_isn(ISN_DATA)
-    kp, epoch, date = extract_kp(KP_DATA)
-    daily = dict(isn=isn, flux_10cm=flux_10cm, Kp=kp, date=date)
-    response = dict(solar=daily)
-    # responseCode = 200
-    # return make_response(jsonify(response), responseCode)
-    return response
+    try:
+        ISN_DATA = get_data(ISN_URL)
+        KP_DATA = get_data(KP_URL)
+        isn, flux_10cm, date = extract_isn(ISN_DATA)
+        kp, date = extract_kp(KP_DATA)
+        daily = dict(isn=isn, flux_10cm=flux_10cm, Kp=kp, date=date)
+        response = dict(solar=daily)
+        # responseCode = 200
+        # return make_response(jsonify(response), responseCode)
+        return response
+    except Exception as e:
+        logging.error('Failed to retrieve solar data: %s', e)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to retrieve solar data. Please try again later."
+        )
 
 
 @app.get("/health")
@@ -372,7 +367,7 @@ async def health(request: Request):
 
 # Set up the scheduler
 sched = BackgroundScheduler(daemon=True)
-# Schedule the ingestion every 6 hours
+# Schedule the ingestion every 24 hours
 sched.add_job(func=dailyIsnIngest, trigger='interval', hours=24, next_run_time=datetime.now())
 # Schedule posting to discord every 12 hours
 sched.add_job(func=dailyIsnDiscord, trigger='interval', hours=24, next_run_time=datetime.now())
