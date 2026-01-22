@@ -329,7 +329,9 @@ def discord_post(isn, flux_10cm, Kp):
         logging.error(
             '--- Siscord post failed, %s load failed. %s Error: %s', url, r, err)
         return None
+        return None
     except Exception as e:
+        return None
         logging.error('Data load, some other error: %s', e)
         return None
     else:
