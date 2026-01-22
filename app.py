@@ -177,8 +177,10 @@ def get_data(url):
         return data
     except requests.exceptions.HTTPError as err:
         logging.error('Data %s load failed. %s Error: %s', url, r, err)
+        return None
     except Exception as e:
         logging.error('Data load, some other error: %s', e)
+        return None
 
 
 def extract_kp(data):
