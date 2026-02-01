@@ -15,7 +15,7 @@ Jinja2==3.1.6
 MarkupSafe==3.0.3
 python-dotenv==1.2.1
 pydantic==2.12.3
-pydantic-core==2.41.4
+pydantic-core==2.41.5
 pytz==2025.2
 requests==2.32.5
 six==1.17.0
